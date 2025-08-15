@@ -1,0 +1,15 @@
+{
+    {
+        // Other settings...
+        "tailwindCSS.includeLanguages": {
+           "vue": "html",
+           "javascript": "javascript",
+           "css": "css"
+        },
+        "tailwindCSS.emmetCompletions": true,
+        "css.validate": false,
+        "scss.validate": false,
+        "less.validate": false
+     }
+     
+}
