@@ -1,7 +1,5 @@
-<!-- components/AboutSection.vue -->
 <template>
-  <section id="about" class="about-wrap py-5 position-relative overflow-hidden">
-    <!-- ============ 1) Ekstraktlar foydasi ============ -->
+  <section id="about" class="about-wrap pb-5 position-relative">
     <div class="container mb-5">
       <div class="extracts-box mx-auto">
         <div class="extracts-head text-center">
@@ -220,16 +218,13 @@
 
 /* SECTION TITLES */
 .section-title {
-  color: var(--ink);
-  font-weight: 800;
+  color: #003262;
+  font-weight: 500;
   line-height: 1.2;
-  font-size: clamp(22px, 3.2vw, 40px);
+  font-size: 40px;
 }
 .text-accent {
-  background: linear-gradient(90deg, var(--brand), #1e2dff);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #0000FF;
 }
 
 /* ====== EXTRACTS ====== */
@@ -242,7 +237,6 @@
   max-width: 1080px;
 }
 .extracts-head {
-  border-bottom: 2px dashed #9ec0ea;
   padding: 0.5rem 1rem 1rem;
 }
 .extracts-grid {
@@ -253,10 +247,10 @@
   display: flex;
   gap: 14px;
   align-items: center;
-  background: #f4f7ff;
+  background: #FDFEFF;
   border: 1px solid #e4eeff;
   border-radius: 14px;
-  padding: 12px;
+  padding: 8px;
   margin-bottom: 14px;
 }
 .thumb {
@@ -269,26 +263,25 @@
   height: 110px;
 }
 .thumb img {
-  max-height: 90px;
+  max-height: 110px;
   width: auto;
 }
 .text {
   flex: 1;
 }
 .item-title {
-  color: var(--ink);
-  font-weight: 800;
+  color: #003262;
+  font-weight: 500;
   margin-bottom: 0.25rem;
-  font-size: clamp(16px, 1.6vw, 20px);
+  font-size: 22px;
 }
 .item-desc {
-  color: var(--muted);
+  color: #01101E;
   margin: 0;
-  font-size: clamp(13px, 1.2vw, 16px);
+  font-size: 16px;
 }
 .extracts-foot {
   height: 10px;
-  border-top: 2px dashed #9ec0ea;
   margin: 6px 6px 0;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
@@ -299,7 +292,7 @@
   border: 2px solid var(--border);
   border-radius: 14px;
   background: #f4f7ff;
-  padding: 24px 18px;
+  padding: 0 18px;
   max-width: 1080px;
 }
 
@@ -321,7 +314,7 @@
 .titem {
   display: flex;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 4.5rem;
   position: relative;
 }
 .titem:last-child {
@@ -330,7 +323,7 @@
 .dot {
   position: absolute;
   left: -2px;
-  top: 6px;
+  top: 12px;
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -338,13 +331,14 @@
   border: 2px solid #7eacde;
 }
 .t-title {
-  color: var(--ink);
-  font-weight: 800;
-  font-size: clamp(18px, 1.8vw, 24px);
+  color: #003262;
+  font-weight: 500;
+  font-size: 28px;
   line-height: 1.2;
 }
 .t-desc {
-  color: var(--muted);
+  color: #003262;
+  font-size: 16px;
 }
 
 .t-title,
@@ -362,7 +356,7 @@
   height: auto;
   display: block;
   border-radius: 10px;
-  transform: rotate(-6deg);
+  transform: rotate(-3deg);
 }
 .cert-nav {
   position: absolute;

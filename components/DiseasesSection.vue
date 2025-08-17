@@ -1,4 +1,3 @@
-<!-- components/DiseasesSection.vue -->
 <template>
   <section id="diseases" class="diseases py-5">
     <div class="container">
@@ -97,9 +96,9 @@ const pillStyle = (side: "left" | "right", y: number) =>
 <style scoped>
 :root {
   --border: #2a66a3;
-  --ink: #0f2d56;
+  --ink: #003262;
   --muted: #5b6b8b;
-  --brand: #0b5fff;
+  --brand: #0000FF;
   --brand2: #1e2dff;
   --bg: #f4f7ff;
 }
@@ -114,28 +113,12 @@ const pillStyle = (side: "left" | "right", y: number) =>
   padding: 22px 16px 28px;
   max-width: 1080px;
 }
-.box::after {
-  /* pastdan yengil ko'k gradient (figmadagi kabi) */
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 80px;
-  background: linear-gradient(
-    180deg,
-    rgba(11, 95, 255, 0) 0%,
-    rgba(11, 95, 255, 0.08) 100%
-  );
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  pointer-events: none;
-}
+
 .title {
   color: var(--ink);
-  font-weight: 800;
-  line-height: 1.25;
-  font-size: clamp(22px, 3vw, 36px);
+  font-weight: 500;
+  line-height: 1.15;
+  font-size: 40px;
 }
 .accent {
   background: linear-gradient(90deg, var(--brand), var(--brand2));
@@ -152,8 +135,8 @@ const pillStyle = (side: "left" | "right", y: number) =>
 }
 .product {
   display: block;
-  width: 320px;
-  max-width: 52%;
+  width: 400px;
+  max-width: 62%;
   margin: 0 auto;
   user-select: none;
   pointer-events: none;
@@ -166,11 +149,11 @@ const pillStyle = (side: "left" | "right", y: number) =>
   border: 1px solid #e6f0ff;
   box-shadow: 0 10px 24px rgba(26, 42, 96, 0.1);
   border-radius: 999px;
-  padding: 0.55rem 0.9rem;
+  padding: 0.9rem 1.5rem;
   font-weight: 600;
-  color: #203355;
-  max-width: 280px;
-  font-size: 14px;
+  color: #003262;
+  max-width: 400px;
+  font-size: 17px;
 }
 .pill.left {
   text-align: left;
@@ -183,7 +166,6 @@ const pillStyle = (side: "left" | "right", y: number) =>
   height: 28px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 /* mobile/grid ko'rinish */
