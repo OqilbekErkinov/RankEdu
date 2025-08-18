@@ -135,22 +135,22 @@ function submit() {
 const participants = [
   {
     name: "Cassie Jung",
-    img: "/images/call1.png",
+    img: "/images/call1.webp",
     muted: true,
   },
   {
     name: "Alice Wong",
-    img: "/images/call2.png",
+    img: "/images/call2.webp",
     muted: false,
   },
   {
     name: "Theresa Webb",
-    img: "/images/call3.png",
+    img: "/images/call3.webp",
     muted: false,
   },
   {
     name: "Christian Wong",
-    img: "/images/call4.png",
+    img: "/images/call4.webp",
     muted: true,
   },
 ];

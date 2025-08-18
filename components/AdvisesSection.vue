@@ -41,7 +41,7 @@
       <div class="row g-4 align-items-start">
         <!-- Left list -->
         <div class="col-lg-7">
-          <div class="d-flex flex-column gap-3">
+          <div class="d-flex flex-column" style="gap: 2.4rem">
             <AudioMini v-for="(a,i) in audios" :key="'a'+i" :src="a" />
           </div>
         </div>
@@ -75,14 +75,14 @@ type Props = {
 
 const props = withDefaults(defineProps<Props>(), {
   videoThumbs2: () => [
-    '/images/advise1.png',
-    '/images/advise2.png'
+    '/images/advise1.webp',
+    '/images/advise2.webp'
   ],
   gallery4: () => [
-    '/images/advise1.png',
-    '/images/advise2.png',
-    '/images/advise3.png',
-    '/images/advise4.png'
+    '/images/advise1.webp',
+    '/images/advise2.webp',
+    '/images/advise3.webp',
+    '/images/advise4.webp'
   ],
   audios: () =>
     Array.from({ length: 8 }, () => 'https://www2.cs.uic.edu/~i101/SoundFiles/StarWars60.wav'),
@@ -125,7 +125,6 @@ const props = withDefaults(defineProps<Props>(), {
 .soft-card{
   background: #E8EFFF;
   border-radius: 24px;
-  box-shadow: 0 6px 24px rgba(6,24,44,.06);
 }
 
 .thumb{

@@ -166,7 +166,7 @@ const props = withDefaults(
     cards: () => [
       {
         age: "3 ёшдан 12 ёшгача",
-        img: "/images/benefit1.png",
+        img: "/images/benefit1.webp",
         bullets: [
           "Болаларда эхзэн ва хотирани кучайтиради",
           "Бўшашиш ва ижобийлик",
@@ -175,7 +175,7 @@ const props = withDefaults(
       },
       {
         age: "12 ёшдан 30 ёшгача",
-        img: "/images/benefit2.png",
+        img: "/images/benefit2.webp",
         bullets: [
           "Асабларни тинчлантириб беради",
           "Сўзлаш қобилияти",
@@ -184,7 +184,7 @@ const props = withDefaults(
       },
       {
         age: "30 ёшдан 65 ёшгача",
-        img: "/images/benefit3.png",
+        img: "/images/benefit3.webp",
         bullets: [
           "Мияда қон айланишини яхшилайди",
           "Юрак органи ва юрак ўйнашда фойдали",
@@ -194,11 +194,11 @@ const props = withDefaults(
     ],
     post: () => ({
       date: "Июл 21:27",
-      image: "/images/benefit4.jpg",
+      image: "/images/benefit4.webp",
       comments: 27,
     }),
-    brandAvatar: "/images/brandAvatar.png",
-    userAvatar: "/images/avatar1.png",
+    brandAvatar: "/images/brandAvatar.webp",
+    userAvatar: "/images/avatar1.webp",
   }
 );
 </script>

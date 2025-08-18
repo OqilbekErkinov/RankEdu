@@ -12,7 +12,7 @@
         <div class="stage position-relative mx-auto">
           <!-- mahsulot -->
           <img
-            src="/images/pack-bottle.png"
+            src="/images/pack-bottle.webp"
             alt="Nevroslim"
             class="product"
             loading="lazy"
@@ -49,21 +49,21 @@
 type Bubble = { text: string; y: number; avatar?: string };
 
 const leftBubbles: Bubble[] = [
-  { text: "Бирор иш қилиш ёқмаслиги", y: 8, avatar: "/images/a1.png" },
-  { text: "Уйқусизлик, ваҳима", y: 32, avatar: "/images/a2.png" },
-  { text: "Депрессия", y: 56, avatar: "/images/a3.png" },
-  { text: "Тушкун ҳолатда юриш", y: 78, avatar: "/images/a4.png" },
+  { text: "Бирор иш қилиш ёқмаслиги", y: 8, avatar: "/images/a1.webp" },
+  { text: "Уйқусизлик, ваҳима", y: 32, avatar: "/images/a2.webp" },
+  { text: "Депрессия", y: 56, avatar: "/images/a3.webp" },
+  { text: "Тушкун ҳолатда юриш", y: 78, avatar: "/images/a4.webp" },
 ];
 
 const rightBubbles: Bubble[] = [
-  { text: "Сабабсиз бетоқатлик", y: 8, avatar: "/images/a5.png" },
-  { text: "Асаб толиқиши", y: 32, avatar: "/images/a6.png" },
-  { text: "Бош оғриғи, мигрень", y: 53, avatar: "/images/a8.png" },
-  { text: "Зеҳн ва хотиранг пастлиги", y: 76, avatar: "/images/a7.png" },
+  { text: "Сабабсиз бетоқатлик", y: 8, avatar: "/images/a5.webp" },
+  { text: "Асаб толиқиши", y: 32, avatar: "/images/a6.webp" },
+  { text: "Бош оғриғи, мигрень", y: 53, avatar: "/images/a8.webp" },
+  { text: "Зеҳн ва хотиранг пастлиги", y: 76, avatar: "/images/a7.webp" },
   {
     text: "Юрак соҳасида оғрик ва юрак ўйнаши",
     y: 99,
-    avatar: "/images/a9.png",
+    avatar: "/images/a9.webp",
   },
 ];
 

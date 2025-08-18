@@ -45,7 +45,7 @@
         <div class="bubble bubble-2 d-lg-flex align-items-center gap-2">
           <span>Шифокор маслаҳатига биноан қабул...</span>
           <img
-            src="/images/avatar1.png"
+            src="/images/avatar1.webp"
             alt="user"
             class="rounded-circle"
             width="28"
@@ -660,7 +660,7 @@
       <!-- Bitta kompozit rasm (ayol + dorilar + yozuvlar) -->
       <figure class="hero-picture mx-auto">
         <img
-          src="/images/hero-composite.png"
+          src="/images/hero-composite.webp"
           alt="Nevroslim hero"
           class="hero-picture__img"
           loading="eager"

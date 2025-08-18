@@ -15,7 +15,7 @@
           <div class="col-12 col-lg-6">
             <div class="extract-item">
               <div class="thumb">
-                <img src="/images/ginkgo.png" alt="Гинкго билоба" />
+                <img src="/images/ginkgo.webp" alt="Гинкго билоба" />
               </div>
               <div class="text">
                 <h5 class="item-title">Гинкго билоба</h5>
@@ -28,7 +28,7 @@
 
             <div class="extract-item">
               <div class="thumb">
-                <img src="/images/blackroot.png" alt="Қора андиз" />
+                <img src="/images/blackroot.webp" alt="Қора андиз" />
               </div>
               <div class="text">
                 <h5 class="item-title">Қора андиз</h5>
@@ -40,7 +40,7 @@
 
             <div class="extract-item mb-0">
               <div class="thumb">
-                <img src="/images/mumie.png" alt="Мумийё" />
+                <img src="/images/mumie.webp" alt="Мумийё" />
               </div>
               <div class="text">
                 <h5 class="item-title">Мумийё</h5>
@@ -55,7 +55,7 @@
           <div class="col-12 col-lg-6">
             <div class="extract-item">
               <div class="thumb">
-                <img src="/images/valeriana.png" alt="Валериана" />
+                <img src="/images/valeriana.webp" alt="Валериана" />
               </div>
               <div class="text">
                 <h5 class="item-title">Валериана</h5>
@@ -68,7 +68,7 @@
 
             <div class="extract-item">
               <div class="thumb">
-                <img src="/images/ginger.png" alt="Занжабил" />
+                <img src="/images/ginger.webp" alt="Занжабил" />
               </div>
               <div class="text">
                 <h5 class="item-title">Занжабил</h5>
@@ -81,7 +81,7 @@
 
             <div class="extract-item mb-0">
               <div class="thumb">
-                <img src="/images/cinnamon.png" alt="Долчин" />
+                <img src="/images/cinnamon.webp" alt="Долчин" />
               </div>
               <div class="text">
                 <h5 class="item-title">Долчин</h5>
@@ -159,14 +159,14 @@
                 <div class="carousel-item active">
                   <img
                     class="cert-img"
-                    src="/images/cert1.png"
+                    src="/images/cert1.webp"
                     alt="Certificate 1"
                   />
                 </div>
                 <div class="carousel-item">
                   <img
                     class="cert-img"
-                    src="/images/cert2.png"
+                    src="/images/cert2.webp"
                     alt="Certificate 2"
                   />
                 </div>
@@ -223,6 +223,8 @@
   font-weight: 500;
   line-height: 1.2;
   font-size: 40px;
+  max-width: 999px;
+  margin: auto;
 }
 .text-accent {
   color: #0000ff;
@@ -233,9 +235,8 @@
   border: 2px solid var(--border);
   border-radius: 14px;
   background: #f4f7ff;
-  padding: 28px 18px 10px;
+  padding: 30px 0;
   position: relative;
-  max-width: 1080px;
 }
 .extracts-head {
   padding: 0.5rem 1rem 1rem;
@@ -293,8 +294,8 @@
   border: 2px solid var(--border);
   border-radius: 14px;
   background: #f4f7ff;
-  padding: 0 18px;
-  max-width: 1080px;
+  /* padding: 0 18px; */
+  /* max-width: 1080px; */
 }
 
 /* Timeline bullets */

@@ -39,7 +39,7 @@ const submit = async () => {
           </form>
         </div>
         <div class="col-12 col-md-6">
-          <img src="/images/order-side.png" class="img-fluid" alt="Order" />
+          <img src="/images/order-side.webp" class="img-fluid" alt="Order" />
         </div>
       </div>
     </div>
