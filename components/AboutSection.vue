@@ -200,19 +200,19 @@
                 aria-label="Next"
               >
                 <svg
-                  width="24"
+                  width="25"
                   height="25"
-                  viewBox="0 0 24 25"
+                  viewBox="0 0 25 25"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M12 2.63965C6.47715 2.63965 2 7.1168 2 12.6396C2 18.1625 6.47715 22.6396 12 22.6396C17.5228 22.6396 22 18.1625 22 12.6396C22 7.1168 17.5228 2.63965 12 2.63965Z"
+                    d="M12.7816 22.6396C18.3045 22.6396 22.7816 18.1625 22.7816 12.6396C22.7816 7.1168 18.3045 2.63965 12.7816 2.63965C7.25877 2.63965 2.78162 7.1168 2.78162 12.6396C2.78162 18.1625 7.25877 22.6396 12.7816 22.6396Z"
                     stroke="#0070FF"
                     stroke-width="2"
                   />
                   <path
-                    d="M13.4999 16.6399C13.4999 16.6399 10.4999 13.6939 10.4999 12.6399C10.4999 11.5858 13.4999 8.63989 13.4999 8.63989"
+                    d="M11.2815 8.63989C11.2815 8.63989 14.2815 11.5859 14.2815 12.6399C14.2815 13.694 11.2815 16.6399 11.2815 16.6399"
                     stroke="#0070FF"
                     stroke-width="2"
                     stroke-linecap="round"
@@ -238,7 +238,8 @@
                 @click="openZoom(certs[certIndex])"
                 aria-label="Zoom"
               >
-                <svg class="zoom-icon"
+                <svg
+                  class="zoom-icon"
                   width="32"
                   height="32"
                   viewBox="0 0 32 32"
@@ -599,7 +600,7 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   }
   .zoom {
     right: 33px;
-    bottom: 6.5rem; 
+    bottom: 6.5rem;
   }
   .zoom-icon {
     width: 25px;
