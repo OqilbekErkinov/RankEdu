@@ -341,7 +341,7 @@ const goFullscreen = async (id: string) => {
     font-size: 24px;
   }
   .video-card[data-v-0cb8c9e8] {
-    min-height: 250px;
+    min-height: 250px !important;
   }
 }
 </style>
