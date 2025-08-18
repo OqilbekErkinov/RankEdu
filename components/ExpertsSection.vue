@@ -102,13 +102,12 @@ import { ref, computed } from "vue";
 
 const videoIds = ref<string[]>([
   // o'zingiznikini yozing
-  "CSI9y-ZfFMk",
-  "Yw0oGB6X9eo",
-  "msk1Tsm8kiE",
-  "xNW-_UZdSRw",
-  "JiV4KzqIRIA",
-  "gH_2b2emcKw",
-  "ftrEjtUO0bo",
+  "PCltK1XzrBk",
+  "3JGBF8Zaz4I",
+  "RHIIYA8P1DI",
+  "u7UgJafwpW8",
+  "JDlXf92LiTo",
+  "ZbSPn_FnPyI",
 ]);
 
 /* --- inline play with sound (user click bo‘lgani uchun ruxsat etiladi) --- */
