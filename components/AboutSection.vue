@@ -225,7 +225,7 @@
   font-size: 40px;
 }
 .text-accent {
-  color: #0000FF;
+  color: #0000ff;
 }
 
 /* ====== EXTRACTS ====== */
@@ -248,7 +248,7 @@
   display: flex;
   gap: 14px;
   align-items: center;
-  background: #FDFEFF;
+  background: #fdfeff;
   border: 1px solid #e4eeff;
   border-radius: 14px;
   padding: 8px;
@@ -277,7 +277,7 @@
   font-size: 22px;
 }
 .item-desc {
-  color: #01101E;
+  color: #01101e;
   margin: 0;
   font-size: 16px;
 }
@@ -381,19 +381,9 @@
 }
 
 /* ====== RESPONSIVE ====== */
-@media (max-width: 991.98px) {
-  .thumb {
-    flex-basis: 120px;
-    height: 96px;
-  }
-}
 @media (max-width: 767.98px) {
   .extracts-box {
     padding: 20px 12px 8px;
-  }
-  .thumb {
-    flex-basis: 96px;
-    height: 84px;
   }
   .cert-nav {
     width: 34px;
@@ -405,6 +395,41 @@
   }
   .cert-nav.carousel-control-next {
     right: 4px;
+  }
+}
+@media (max-width: 600px) {
+  .section-title {
+    font-size: 24px;
+  }
+  .extracts-box {
+    padding: 0;
+  }
+  .extracts-grid {
+    padding: 0;
+  }
+  .item-title {
+    font-size: 16px;
+  }
+  .item-desc {
+    font-size: 12px;
+  }
+  .extract-item {
+    border-radius: 8px;
+  }
+  .titem {
+    margin-bottom: 2.5rem;
+  }
+  .t-title {
+    font-size: 18px;
+  }
+  .t-desc {
+    font-size: 14px;
+  }
+  .cert-view {
+    padding: 0;
+  }
+  .cert-box {
+    padding: 0;
   }
 }
 </style>

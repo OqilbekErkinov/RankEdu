@@ -17,7 +17,7 @@
 
       <!-- nav -->
       <nav class="text-center">
-        <ul class="list-inline m-0">
+        <ul class="list-inline m-0 footer-nav">
           <li
             v-for="(item, i) in items"
             :key="i"
@@ -73,5 +73,13 @@ const props = withDefaults(defineProps<{ items?: Item[] }>(), {
 .footer-link:hover {
   color: #1f4f86;
   text-decoration: underline;
+}
+@media (max-width: 600px) {
+  .footer-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
 }
 </style>

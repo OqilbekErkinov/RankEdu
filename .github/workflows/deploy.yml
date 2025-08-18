@@ -1,84 +1,84 @@
-name: CI/CD with Telegram Notification
+# name: CI/CD with Telegram Notification
 
-on:
-  push:
-    branches:
-      - main
-      - master
+# on:
+#   push:
+#     branches:
+#       - main
+#       - master
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
 
-      - name: Get commit information
-        run: |
-          COMMIT_HASH=$(git rev-parse HEAD)
-          COMMIT_MESSAGE=$(git log -1 --pretty=format:'%s' | sed 's/[_*\[\]()~`>#\+=|{}.!]/\\&/g')
-          COMMIT_DATE=$(git log -1 --pretty=format:'%ci')
-          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-          REPO_NAME=${{ github.repository }}
-          COMMIT_URL="https://github.com/$REPO_NAME/commit/$COMMIT_HASH"
-          GITHUB_ACTOR="${{ github.actor }}"
+#       - name: Get commit information
+#         run: |
+#           COMMIT_HASH=$(git rev-parse HEAD)
+#           COMMIT_MESSAGE=$(git log -1 --pretty=format:'%s' | sed 's/[_*\[\]()~`>#\+=|{}.!]/\\&/g')
+#           COMMIT_DATE=$(git log -1 --pretty=format:'%ci')
+#           BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+#           REPO_NAME=${{ github.repository }}
+#           COMMIT_URL="https://github.com/$REPO_NAME/commit/$COMMIT_HASH"
+#           GITHUB_ACTOR="${{ github.actor }}"
 
-          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
-          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
-          echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
-          echo "COMMIT_URL=$COMMIT_URL" >> $GITHUB_ENV
-          echo "GITHUB_ACTOR=$GITHUB_ACTOR" >> $GITHUB_ENV
+#           echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+#           echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+#           echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
+#           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+#           echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+#           echo "COMMIT_URL=$COMMIT_URL" >> $GITHUB_ENV
+#           echo "GITHUB_ACTOR=$GITHUB_ACTOR" >> $GITHUB_ENV
 
-      - name: Serverga ulanish va pull qilish
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            sudo -i << 'EOF'
-            cd /var/www/Khamrayev-Filters
+#       - name: Serverga ulanish va pull qilish
+#         uses: appleboy/ssh-action@v0.1.7
+#         with:
+#           host: ${{ secrets.HOST }}
+#           username: ${{ secrets.USER }}
+#           key: ${{ secrets.SSH_KEY }}
+#           script: |
+#             sudo -i << 'EOF'
+#             cd /var/www/Khamrayev-Filters
 
-            # Git konfiguratsiyasi
-            git fetch origin main
-            git reset --hard origin/main  # Yangilash va eski kodlarni inkor qilish
+#             # Git konfiguratsiyasi
+#             git fetch origin main
+#             git reset --hard origin/main  # Yangilash va eski kodlarni inkor qilish
 
-            # Build jarayonini bajarish
-            npm run build  # Faqat build qilish
+#             # Build jarayonini bajarish
+#             npm run build  # Faqat build qilish
 
-            # PM2 ni yangilash
-            pm2 restart all  # PM2 orqali xizmatni yangilash
+#             # PM2 ni yangilash
+#             pm2 restart all  # PM2 orqali xizmatni yangilash
 
-            # Nginxni qayta ishga tushirish
-            sudo systemctl restart nginx  # Nginxni qayta ishga tushirish
-            EOF
+#             # Nginxni qayta ishga tushirish
+#             sudo systemctl restart nginx  # Nginxni qayta ishga tushirish
+#             EOF
 
-      - name: Send notification to Telegram
-        run: |
-            curl -X POST "https://api.telegram.org/bot7399847827:AAG5tD_qQU8qIktxVMRMkHoWZENLRU9HnQ4/sendMessage" \
-            -d "chat_id=-1002289045305" \
-            -d parse_mode="MarkdownV2" \
-            curl -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
-            -d chat_id="$CHAT_ID" \
-            -d parse_mode="MarkdownV2" \
-            -d text="*📢 KhamrayevFilters Frontend проект обновлен\!*  
+#       - name: Send notification to Telegram
+#         run: |
+#             curl -X POST "https://api.telegram.org/bot7399847827:AAG5tD_qQU8qIktxVMRMkHoWZENLRU9HnQ4/sendMessage" \
+#             -d "chat_id=-1002289045305" \
+#             -d parse_mode="MarkdownV2" \
+#             curl -X POST "https://api.telegram.org/bot$TOKEN/sendMessage" \
+#             -d chat_id="$CHAT_ID" \
+#             -d parse_mode="MarkdownV2" \
+#             -d text="*📢 KhamrayevFilters Frontend проект обновлен\!*  
        
-            📌 *Автор:* \`${{ env.GITHUB_ACTOR }}\`  
+#             📌 *Автор:* \`${{ env.GITHUB_ACTOR }}\`  
             
-            🌿 *Ветка:* \`${{ env.BRANCH_NAME }}\`  
+#             🌿 *Ветка:* \`${{ env.BRANCH_NAME }}\`  
             
-            📝 *Сообщение коммита:* \`${{ env.COMMIT_MESSAGE }}\`  
+#             📝 *Сообщение коммита:* \`${{ env.COMMIT_MESSAGE }}\`  
             
-            📅 *Дата:* \`${{ env.COMMIT_DATE }}\`  
+#             📅 *Дата:* \`${{ env.COMMIT_DATE }}\`  
             
-            🔗 [Просмотр коммита](${{ env.COMMIT_URL }})  
+#             🔗 [Просмотр коммита](${{ env.COMMIT_URL }})  
             
-            ✅ *KhamrayevFilters Frontend успешно обновлен на сервере\!*  
+#             ✅ *KhamrayevFilters Frontend успешно обновлен на сервере\!*  
             
-            🔄 *Код загружен и обновлен на сервере*  
+#             🔄 *Код загружен и обновлен на сервере*  
             
-            🔗 [Просмотр репозитория](https://github.com/${{ github.repository }})"
+#             🔗 [Просмотр репозитория](https://github.com/${{ github.repository }})"
        

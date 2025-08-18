@@ -1,5 +1,5 @@
 :root {
-  --brand: #0000FF;
+  --brand: #0000ff;
   --brand-2: #1e2dff;
   --ink: #003262;
   --muted: #5b6b8b;
@@ -12,11 +12,20 @@
   font-weight: normal;
   line-height: 1;
 }
-.bi::before { display: inline-block; }
+.bi::before {
+  display: inline-block;
+}
 
 .container {
   margin: 0 50px;
 }
+
+@media (max-width: 600px) {
+  .container {
+    margin: 0;
+  }
+}
+
 .form-control::placeholder {
   color: #003262;
 }
@@ -59,7 +68,7 @@ h4 {
   filter: brightness(0.95);
 }
 .badge-sale {
-  background: #FFBF00;
+  background: #ffbf00;
   color: #131313;
   border-radius: 50%;
   padding: 1rem 0.6rem;
@@ -87,7 +96,6 @@ h4 {
   padding: 0.5rem 0.75rem;
 }
 .stat-chip {
-
   border-radius: 14px;
   padding: 0.65rem 0.9rem;
   font-weight: 600;

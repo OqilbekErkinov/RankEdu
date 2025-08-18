@@ -144,4 +144,9 @@ const props = withDefaults(defineProps<Props>(), {
 @media (min-width: 992px){
   .gallery .thumb img{ height: 200px; }
 }
+@media (max-width: 600px) {
+  .section-title {
+    font-size: 24px;
+  }
+}
 </style>

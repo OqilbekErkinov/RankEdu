@@ -1,6 +1,6 @@
 <!-- components/ExpertsSection.vue -->
 <template>
-  <section id="experts" class="experts">
+  <section id="experts" class="experts pb-5 mb-5">
     <div class="container position-relative">
       <h2 class="title text-center mb-4">
         Мутаҳассислар "<span class="accent">Неврослим</span>" ҳақида фикрлари
@@ -343,5 +343,19 @@ const scrollByCard = (dir: 1 | -1) => {
 }
 .bg-black {
   background: #000;
+}
+@media (max-width: 600px) {
+  .title {
+    font-size: 24px;
+  }
+  .side-arrow {
+    top: 105%;
+  }
+  .side-arrow.left {
+    left: 7rem;
+  }
+  .side-arrow.right {
+    right: 7rem;
+  }
 }
 </style>

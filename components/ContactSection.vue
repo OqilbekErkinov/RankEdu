@@ -43,7 +43,15 @@
 
           <!-- form -->
           <div class="col-lg-6">
-            <p class="mb-5" style="max-width: 432px; color: #01101E; font-size: 18px; margin-top: -2rem">
+            <p
+              class="mb-5 timer-text"
+              style="
+                max-width: 432px;
+                color: #01101e;
+                font-size: 18px;
+                margin-top: -2rem;
+              "
+            >
               Асабингизни табиий экстрактлар орқали тузатиб шифо топинг. Ўзингиз
               ва яқинларингиз соғлигига бефарқ бўлманг
             </p>
@@ -56,7 +64,7 @@
                   class="form-control"
                   placeholder="Исмиңиз"
                   v-model="form.name"
-                  style="color: #003262 !important; border: 1px solid #B3C8D8;"
+                  style="color: #003262 !important; border: 1px solid #b3c8d8"
                 />
               </div>
               <div class="mb-4">
@@ -65,12 +73,13 @@
                   class="form-control"
                   placeholder="+998"
                   v-model="form.phone"
-                  style="color: #003262 !important; border: 1px solid #B3C8D8;"
+                  style="color: #003262 !important; border: 1px solid #b3c8d8"
                 />
               </div>
               <button
-                class="btn w-100 py-2 d-flex align-items-center justify-content-center gap-2" 
-                @click="submit" style="background: #0000FF; color: #FDFEFF"
+                class="btn w-100 py-2 d-flex align-items-center justify-content-center gap-2"
+                @click="submit"
+                style="background: #0000ff; color: #fdfeff"
               >
                 Биз билан боғланиш
                 <i class="bi bi-telephone"></i>
@@ -275,5 +284,18 @@ const participants = [
 .circle-btn.record {
   background: #ffecec;
   border-color: #ffd2d2;
+}
+@media (max-width: 600px) {
+  .timer .time-block .digits{
+    font-size: 56px;
+  }
+  .timer-text {
+    font-size: 16px !important;
+    margin-top: 2rem !important;
+    max-width: none !important;
+  }
+  .soft-inner {
+    padding: 0 !important;
+  }
 }
 </style>

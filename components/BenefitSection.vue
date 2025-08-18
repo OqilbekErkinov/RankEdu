@@ -292,4 +292,9 @@ const props = withDefaults(
     transparent 60%
   );
 }
+@media (max-width: 600px) {
+  .section-title {
+    font-size: 24px;
+  }
+}
 </style>

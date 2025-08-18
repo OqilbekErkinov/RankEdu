@@ -40,25 +40,6 @@
             <span>{{ it.text }}</span>
           </div>
         </div>
-
-        <!-- mobile list (absolute elementlar mobilda gridga aylanadi) -->
-        <div class="row g-2 d-md-none mt-3">
-          <div
-            v-for="(it, i) in allBubbles"
-            :key="'m' + i"
-            class="col-12 col-sm-6"
-          >
-            <div class="pill static d-flex align-items-center">
-              <img
-                v-if="it.avatar"
-                :src="it.avatar"
-                alt=""
-                class="avatar me-2"
-              />
-              <span>{{ it.text }}</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -77,8 +58,8 @@ const leftBubbles: Bubble[] = [
 const rightBubbles: Bubble[] = [
   { text: "Сабабсиз бетоқатлик", y: 8, avatar: "/images/a5.png" },
   { text: "Асаб толиқиши", y: 32, avatar: "/images/a6.png" },
-  { text: "Зеҳн ва хотиранг пастлиги", y: 53, avatar: "/images/a7.png" },
-  { text: "Бош оғриғи, мигрень", y: 76, avatar: "/images/a8.png" },
+  { text: "Бош оғриғи, мигрень", y: 53, avatar: "/images/a8.png" },
+  { text: "Зеҳн ва хотиранг пастлиги", y: 76, avatar: "/images/a7.png" },
   {
     text: "Юрак соҳасида оғрик ва юрак ўйнаши",
     y: 99,
@@ -98,7 +79,7 @@ const pillStyle = (side: "left" | "right", y: number) =>
   --border: #2a66a3;
   --ink: #003262;
   --muted: #5b6b8b;
-  --brand: #0000FF;
+  --brand: #0000ff;
   --brand2: #1e2dff;
   --bg: #f4f7ff;
 }
@@ -181,17 +162,33 @@ const pillStyle = (side: "left" | "right", y: number) =>
   .box {
     padding: 18px 12px 18px;
   }
-  .stage {
-    min-height: auto;
-    padding-bottom: 8px;
-  }
   .product {
     max-width: 68%;
   }
-  /* absolute pilllarni mobilda yashiramiz — yuqorida grid bor */
-  .pill.left,
-  .pill.right {
-    display: none;
+}
+@media (max-width: 600px) {
+  .title {
+    font-size: 24px;
+  }
+  .box {
+    padding: 0;
+  }
+  .stage {
+    margin-left: -0.8rem !important;
+    margin-right: -0.8rem !important;
+  }
+  .pill {
+    padding: 0 5px;
+    font-size: 6px;
+  }
+  .left {
+    left: 0 !important;
+  }
+  .right {
+    right: 0 !important;
+  }
+  .product {
+    margin-top: 4rem
   }
 }
 </style>
