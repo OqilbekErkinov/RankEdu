@@ -214,6 +214,7 @@
 /* umumiy fon */
 .about-wrap {
   background: #f4f7ff;
+  /* background-image: url("/icons/DNA.svg"); */
 }
 
 /* SECTION TITLES */

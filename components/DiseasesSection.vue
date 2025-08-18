@@ -1,5 +1,5 @@
 <template>
-  <section id="diseases" class="diseases py-5">
+  <section id="diseases" class="diseases py-5 mb-5">
     <div class="container">
       <div class="box mx-auto">
         <h2 class="title text-center mb-4">
@@ -76,12 +76,12 @@ const leftBubbles: Bubble[] = [
 
 const rightBubbles: Bubble[] = [
   { text: "Сабабсиз бетоқатлик", y: 8, avatar: "/images/a5.png" },
-  { text: "Асаб толиқиши", y: 30, avatar: "/images/a6.png" },
-  { text: "Зеҳн ва хотиранг пастлиги", y: 48, avatar: "/images/a7.png" },
-  { text: "Бош оғриғи, мигрень", y: 66, avatar: "/images/a8.png" },
+  { text: "Асаб толиқиши", y: 32, avatar: "/images/a6.png" },
+  { text: "Зеҳн ва хотиранг пастлиги", y: 53, avatar: "/images/a7.png" },
+  { text: "Бош оғриғи, мигрень", y: 76, avatar: "/images/a8.png" },
   {
     text: "Юрак соҳасида оғрик ва юрак ўйнаши",
-    y: 84,
+    y: 99,
     avatar: "/images/a9.png",
   },
 ];
@@ -110,8 +110,7 @@ const pillStyle = (side: "left" | "right", y: number) =>
   border: 3px solid var(--border);
   border-radius: 14px;
   background: #f4f7ff;
-  padding: 22px 16px 28px;
-  max-width: 1080px;
+  /* padding: 22px 16px 28px; */
 }
 
 .title {
@@ -129,13 +128,12 @@ const pillStyle = (side: "left" | "right", y: number) =>
 
 /* sahna */
 .stage {
-  max-width: 960px;
   min-height: 360px;
   padding: 24px 0;
 }
 .product {
   display: block;
-  width: 400px;
+  width: 500px;
   max-width: 62%;
   margin: 0 auto;
   user-select: none;

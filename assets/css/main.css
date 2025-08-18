@@ -17,6 +17,9 @@
 .container {
   margin: 0 50px;
 }
+.form-control::placeholder {
+  color: #003262;
+}
 
 html,
 body {
@@ -48,7 +51,7 @@ h4 {
   background: #003262;
   border: none;
   color: #fff;
-  padding: 0.85rem 1.25rem;
+  padding: 0.55rem 1.25rem;
   border-radius: 14px;
   font-weight: 600;
 }

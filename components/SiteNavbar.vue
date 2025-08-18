@@ -1,8 +1,8 @@
 <template>
   <nav class="navbar navbar-expand-lg sticky-top nav-shadow navbar-light" style="padding-top: 2rem;">
     <div class="container py-2">
-      <NuxtLink class="navbar-brand nav-logo d-flex align-items-center gap-2" to="/" style="margin-top: -1rem !important">
-        <img src="/images/logo.svg" alt="Nevroslim" height="28" />
+      <NuxtLink class="navbar-brand nav-logo d-flex align-items-center gap-2" to="/" style="margin-top: -1.7rem !important">
+        <img src="/images/logo.svg" alt="Nevroslim" height="45" />
       </NuxtLink>
 
       <button
