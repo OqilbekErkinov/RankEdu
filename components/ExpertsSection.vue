@@ -15,7 +15,7 @@
               v-if="playingId !== id"
               class="thumb"
               :style="{
-                backgroundImage: `url(https://img.youtube.com/vi/${id}/hqdefault.webp)`,
+                backgroundImage: `url(https://img.youtube.com/vi/${id}/hqdefault.jpg)`,
               }"
             />
             <!-- inline iframe (cover) -->

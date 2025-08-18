@@ -5,8 +5,8 @@
     <DiseasesSection class="" />
     <ExpertsSection class="" />
     <AdvisesSection
-      :videoThumbs2="['/images/advise1.png', '/images/advise2.png']"
-      :gallery4="['/images/advise1.png', '/images/advise2.png', '/images/advise3.png', '/images/advise4.png']"
+      :videoThumbs2="['/images/advise1.webp', '/images/advise2.webp']"
+      :gallery4="['/images/advise1.webp', '/images/advise2.webp', '/images/advise3.webp', '/images/advise4.webp']"
       :audios="[
         '/audio/1.mp3',
         '/audio/2.mp3',

@@ -1,3 +1,4 @@
+<!-- components/AboutSection.vue -->
 <template>
   <section id="about" class="about-wrap pb-5 position-relative">
     <div class="container mb-5">
@@ -51,7 +52,7 @@
             </div>
           </div>
 
-          <!-- o'ng ustun -->
+          <!-- o‘ng ustun -->
           <div class="col-12 col-lg-6">
             <div class="extract-item">
               <div class="thumb">
@@ -99,11 +100,11 @@
       </div>
     </div>
 
-    <!-- ============ 2) Сертификатланган ============ -->
+    <!-- ============ 2) Сертификатланган (Figma sahna) ============ -->
     <div class="container">
       <div class="cert-box mx-auto">
         <div class="row align-items-center g-4">
-          <!-- chap: timeline -->
+          <!-- chap: timeline (o'zgarmagan) -->
           <div class="col-12 col-lg-5">
             <h3 class="section-title mb-4">Сертификатланган</h3>
 
@@ -148,58 +149,142 @@
             </ul>
           </div>
 
-          <!-- o‘ng: sertifikat rasmi/slider -->
+          <!-- o‘ng: sahna/slider figma-style -->
           <div class="col-12 col-lg-7">
-            <div
-              id="certCarousel"
-              class="carousel slide cert-view"
-              data-bs-ride="false"
-            >
-              <div class="carousel-inner">
-                <div class="carousel-item active">
-                  <img
-                    class="cert-img"
-                    src="/images/cert1.webp"
-                    alt="Certificate 1"
-                  />
-                </div>
-                <div class="carousel-item">
-                  <img
-                    class="cert-img"
-                    src="/images/cert2.webp"
-                    alt="Certificate 2"
-                  />
-                </div>
-              </div>
+            <div class="cert-stage">
+              <!-- orqa kartochka (tilted) -->
+              <img
+                class="doc doc-bg doc-1"
+                :src="certs[(certIndex + 1) % certs.length]"
+                alt="certificate bg"
+                draggable="false"
+              />
+              <!-- oldingi asosiy sertifikat (tilted) -->
+              <img
+                class="doc doc-fg doc-2"
+                :src="certs[certIndex]"
+                alt="certificate"
+                draggable="false"
+              />
 
+              <!-- ichki ko'k navigatsiya tugmalari -->
               <button
-                class="carousel-control-prev cert-nav"
-                type="button"
-                data-bs-target="#certCarousel"
-                data-bs-slide="prev"
+                class="nav in left ps-2"
+                @click="prevCert"
+                aria-label="Prev"
               >
-                <span class="visually-hidden">Prev</span>
-                ‹
+                <svg
+                  width="24"
+                  height="25"
+                  viewBox="0 0 24 25"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2.63965C6.47715 2.63965 2 7.1168 2 12.6396C2 18.1625 6.47715 22.6396 12 22.6396C17.5228 22.6396 22 18.1625 22 12.6396C22 7.1168 17.5228 2.63965 12 2.63965Z"
+                    stroke="#0070FF"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M13.4999 16.6399C13.4999 16.6399 10.4999 13.6939 10.4999 12.6399C10.4999 11.5858 13.4999 8.63989 13.4999 8.63989"
+                    stroke="#0070FF"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
               </button>
               <button
-                class="carousel-control-next cert-nav"
-                type="button"
-                data-bs-target="#certCarousel"
-                data-bs-slide="next"
+                class="nav in right ps-2"
+                @click="nextCert"
+                aria-label="Next"
               >
-                <span class="visually-hidden">Next</span>
-                ›
+                <svg
+                  width="24"
+                  height="25"
+                  viewBox="0 0 24 25"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 2.63965C6.47715 2.63965 2 7.1168 2 12.6396C2 18.1625 6.47715 22.6396 12 22.6396C17.5228 22.6396 22 18.1625 22 12.6396C22 7.1168 17.5228 2.63965 12 2.63965Z"
+                    stroke="#0070FF"
+                    stroke-width="2"
+                  />
+                  <path
+                    d="M13.4999 16.6399C13.4999 16.6399 10.4999 13.6939 10.4999 12.6399C10.4999 11.5858 13.4999 8.63989 13.4999 8.63989"
+                    stroke="#0070FF"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <!-- pager -->
+              <div class="pager">
+                <span
+                  v-for="(c, i) in certs"
+                  :key="c"
+                  class="dot-pg"
+                  :class="{ active: i === certIndex }"
+                  @click="certIndex = i"
+                />
+              </div>
+
+              <!-- kattalashtirish (ixtiyoriy) -->
+              <button
+                class="zoom"
+                @click="openZoom(certs[certIndex])"
+                aria-label="Zoom"
+              >
+                <svg class="zoom-icon"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 32 32"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M9.98031 22.0198C9.21391 21.2534 9.34131 17.9975 9.34131 17.9975M9.98031 22.0198C10.7467 22.7862 14.0026 22.6586 14.0026 22.6586M9.98031 22.0198L14.6667 17.3333M22.0199 9.98008C21.2535 9.21367 17.9976 9.3412 17.9976 9.3412M22.0199 9.98008C22.7863 10.7465 22.6587 14.0023 22.6587 14.0023M22.0199 9.98008L17.3334 14.6666"
+                    stroke="#0070FF"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M3.33337 15.9999C3.33337 10.0288 3.33337 7.04324 5.18836 5.18824C7.04336 3.33325 10.0289 3.33325 16 3.33325C21.9711 3.33325 24.9567 3.33325 26.8118 5.18824C28.6667 7.04324 28.6667 10.0288 28.6667 15.9999C28.6667 21.971 28.6667 24.9566 26.8118 26.8117C24.9567 28.6666 21.9711 28.6666 16 28.6666C10.0289 28.6666 7.04336 28.6666 5.18836 26.8117C3.33337 24.9566 3.33337 21.971 3.33337 15.9999Z"
+                    stroke="#0070FF"
+                    stroke-width="2"
+                  />
+                </svg>
               </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Oddiy zoom modal -->
+    <div v-if="zoomSrc" class="zoom-backdrop" @click="zoomSrc = null">
+      <img :src="zoomSrc" class="zoom-img" alt="certificate large" />
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
-// presentational component
+import { ref } from "vue";
+
+// Sertifikat rasmlari (o'zingdagi fayl nomlarini qo'y)
+const certs = ["/images/cert1.webp", "/images/cert2.webp"];
+const certIndex = ref(0);
+const nextCert = () => (certIndex.value = (certIndex.value + 1) % certs.length);
+const prevCert = () =>
+  (certIndex.value = (certIndex.value - 1 + certs.length) % certs.length);
+
+// Zoom (ixtiyoriy)
+const zoomSrc = ref<string | null>(null);
+const openZoom = (src: string) => (zoomSrc.value = src);
 </script>
 
 <style scoped>
@@ -214,7 +299,6 @@
 /* umumiy fon */
 .about-wrap {
   background: #f4f7ff;
-  /* background-image: url("/icons/DNA.svg"); */
 }
 
 /* SECTION TITLES */
@@ -289,13 +373,11 @@
   border-bottom-right-radius: 12px;
 }
 
-/* ====== CERTIFIED ====== */
+/* ====== CERTIFIED (container) ====== */
 .cert-box {
   border: 2px solid var(--border);
   border-radius: 14px;
   background: #f4f7ff;
-  /* padding: 0 18px; */
-  /* max-width: 1080px; */
 }
 
 /* Timeline bullets */
@@ -342,60 +424,123 @@
   color: #003262;
   font-size: 16px;
 }
-
 .t-title,
 .t-desc {
   margin-left: 1.5rem;
 }
-/* certificate viewer / carousel */
-.cert-view {
-  border-radius: 14px;
-  padding: 14px;
+
+/* === CERT: Figma sahna === */
+.cert-stage {
   position: relative;
+  border-radius: 16px;
+  padding: 18px 18px 42px;
+  overflow: hidden;
+  min-height: 620px;
 }
-.cert-img {
-  width: 100%;
+
+/* umumiy rasm stillari */
+.doc {
+  width: 58%;
   height: auto;
   display: block;
-  border-radius: 10px;
-  transform: rotate(-3deg);
+  position: absolute;
+  left: 60%;
+  top: 6%;
+  transform-origin: center;
+  user-select: none;
 }
-.cert-nav {
+.doc-bg {
+  transform: translateX(-50%) rotate(-2deg);
+  opacity: 0.75;
+  width: 53%;
+  top: 10%;
+}
+.doc-fg {
+  transform: translateX(-50%) rotate(0deg);
+  border-radius: 10px;
+}
+.doc-1 {
+  left: 40%;
+}
+
+/* ichki navigatsiya tugmalari */
+.nav.in {
   position: absolute;
   top: 50%;
-  translate: 0 -50%;
-  width: 38px;
-  height: 38px;
+  transform: translateY(-50%);
+  width: 43px;
+  height: 36px;
   border-radius: 50%;
-  border: 1px solid #bfd6f7;
-  background: #fff;
-  color: #3266a6;
+  border: none;
+  color: #0070ff;
   display: grid;
   place-items: center;
   font-size: 22px;
+  z-index: 3;
+  padding-bottom: 2.5rem !important;
+  background: transparent;
 }
-.cert-nav.carousel-control-prev {
-  left: -2rem;
+.nav.in.left {
+  left: 50px;
 }
-.cert-nav.carousel-control-next {
-  right: -10px;
+.nav.in.right {
+  right: 50px;
+}
+
+/* pager – kapsul ko‘rinishi */
+.pager {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 3;
+}
+.dot-pg {
+  width: 36px;
+  height: 6px;
+  background: #cfe0fb;
+  border-radius: 999px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+.dot-pg.active {
+  width: 60px;
+  background: #7fb0ff;
+}
+
+/* zoom tugmasi (past-o‘ng) */
+.zoom {
+  position: absolute;
+  right: 52px;
+  bottom: 10px;
+  border: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  color: #0070ff;
+  background: transparent;
+}
+
+/* zoom modal (oddiy) */
+.zoom-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1055;
+}
+.zoom-img {
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 12px;
 }
 
 /* ====== RESPONSIVE ====== */
 @media (max-width: 767.98px) {
   .extracts-box {
     padding: 20px 12px 8px;
-  }
-  .cert-nav {
-    width: 34px;
-    height: 34px;
-    font-size: 20px;
-  }
-  .cert-nav.carousel-control-prev {
-    left: 4px;
-  }
-  .cert-nav.carousel-control-next {
-    right: 4px;
   }
 }
 @media (max-width: 600px) {
@@ -426,11 +571,45 @@
   .t-desc {
     font-size: 14px;
   }
-  .cert-view {
-    padding: 0;
-  }
   .cert-box {
     padding: 0;
+  }
+  .cert-stage {
+    min-height: 500px;
+    padding: 12px 12px 38px;
+  }
+  .doc {
+    width: 78%;
+    top: 8%;
+  }
+  .doc-bg {
+    width: 74%;
+  }
+  .nav.in {
+    width: 40px;
+    height: 15px;
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .nav.in.left {
+    left: 0px;
+  }
+  .nav.in.right {
+    right: 0px;
+  }
+  .zoom {
+    right: 33px;
+    bottom: 6.5rem; 
+  }
+  .zoom-icon {
+    width: 25px;
+    height: 25px;
+  }
+  .dot-pg {
+    width: 28px;
+  }
+  .dot-pg.active {
+    width: 44px;
   }
 }
 </style>
