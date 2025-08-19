@@ -6,7 +6,12 @@
     <ExpertsSection class="" />
     <AdvisesSection
       :videoThumbs2="['/images/advise1.webp', '/images/advise2.webp']"
-      :gallery4="['/images/advise1.webp', '/images/advise2.webp', '/images/advise3.webp', '/images/advise4.webp']"
+      :gallery4="[
+        '/images/advise1.webp',
+        '/images/advise2.webp',
+        '/images/advise3.webp',
+        '/images/advise4.webp',
+      ]"
       :audios="[
         '/audio/1.mp3',
         '/audio/2.mp3',
@@ -31,8 +36,7 @@ useSeoMeta({
   ogTitle: "Nevroslim — Асаб касалликларига табобий ва табиий ечим",
   ogDescription:
     "Асаб касалликларига табиий таркибли ечим. “Nevroslim” билан ҳаёт сифатини тикланг.",
-  ogImage: "/images/preview.jpg",
+  ogImage: "https://nevroslim.vercel.app/images/preview.jpg",
   ogUrl: "https://nevrolism.vercel.app/",
 });
 </script>
-
