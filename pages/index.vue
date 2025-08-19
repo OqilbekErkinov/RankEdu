@@ -27,5 +27,12 @@ useSeoMeta({
   title: "Nevroslim — Асаб касалликларига табобий ва табиий ечим",
   description:
     "Асаб касалликларига табиий таркибли ечим. “Nevroslim” билан ҳаёт сифатини тикланг.",
+
+  ogTitle: "Nevroslim — Асаб касалликларига табобий ва табиий ечим",
+  ogDescription:
+    "Асаб касалликларига табиий таркибли ечим. “Nevroslim” билан ҳаёт сифатини тикланг.",
+  ogImage: "/images/preview.jpg",
+  ogUrl: "https://nevrolism.vercel.app/",
 });
 </script>
+
