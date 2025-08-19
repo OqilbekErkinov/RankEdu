@@ -252,6 +252,7 @@ const openImageFullscreen = (src: string) => {
   font-weight: 500;
   font-size: 40px;
   letter-spacing: 0.5px;
+  margin: auto;
 }
 .accent {
   color: #0000ff;

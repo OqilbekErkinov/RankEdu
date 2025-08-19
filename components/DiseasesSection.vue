@@ -129,6 +129,7 @@ onMounted(() => {
   font-weight: 500;
   line-height: 1.15;
   font-size: 40px;
+  margin: auto;
 }
 .accent {
   background: linear-gradient(90deg, var(--brand), var(--brand2));

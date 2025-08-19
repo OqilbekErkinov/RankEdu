@@ -219,6 +219,7 @@ const scrollByCard = (dir: 1 | -1) => {
   font-weight: 500;
   line-height: 1.25;
   font-size: 40px;
+  margin: auto;
 }
 .accent {
   color: var(--brand);

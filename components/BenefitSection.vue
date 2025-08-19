@@ -223,6 +223,7 @@ const props = withDefaults(
   font-weight: 500;
   font-size: 40px;
   letter-spacing: 0.3px;
+  margin: auto !important;
 }
 .accent {
   color: #0000ff;
