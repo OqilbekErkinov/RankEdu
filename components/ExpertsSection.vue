@@ -1,9 +1,9 @@
 <!-- components/ExpertsSection.vue -->
 <template>
   <section id="experts" class="experts pb-5 mb-5">
-    <div class="container position-relative">
-      <h2 class="title text-center mb-4">
-        Мутаҳассислар "<span class="accent">Неврослим</span>" ҳақида фикрлари
+    <div class="classformargin position-relative">
+      <h2 class="display-title title text-center mb-4">
+        <span class="duo">Мутаҳассислар "Неврослим" ҳақида фикрлари</span>
       </h2>
 
       <!-- horizontal carousel -->
@@ -36,7 +36,20 @@
               aria-label="Play"
               @click.stop="playInline(id)"
             >
-              ▶
+              <svg fill="none" height="100%" viewBox="0 0 87 115" width="100%">
+                <path
+                  clip-rule="evenodd"
+                  d="M83.99 10.81C90.08 21.24 86.62 34.66 76.26 40.79L69.05 45.06L74.17 47.38C81.58 50.74 86.52 57.99 86.96 66.17C87.40 74.34 83.27 82.09 76.26 86.24L32.76 111.97C22.41 118.10 9.08 114.61 3.00 104.18C-3.08 93.75 .37 80.33 10.73 74.20L17.94 69.93L12.82 67.61C5.41 64.25 .47 57.00 .03 48.82C-0.40 40.65 3.72 32.90 10.73 28.75L54.23 3.02C64.58 -3.10 77.91 .38 83.99 10.81Z"
+                  fill="#f00"
+                  fill-rule="evenodd"
+                ></path>
+                <path
+                  clip-rule="evenodd"
+                  d="M33 74L33 41L61 57.5L33 74Z"
+                  fill="white"
+                  fill-rule="evenodd"
+                ></path>
+              </svg>
             </button>
 
             <!-- overlay controls (show only when playing) -->
@@ -250,8 +263,6 @@ const scrollByCard = (dir: 1 | -1) => {
   aspect-ratio: 9/16;
 }
 
-/* iframe COVER:
-   16:9 videoni 9:16 konteynerga sig‘dirib, yonlarini ozgina kesadi (qora joylar yo‘q) */
 .embed-cover {
   position: absolute;
   top: 50%;
@@ -262,7 +273,6 @@ const scrollByCard = (dir: 1 | -1) => {
   border: 0;
 }
 
-/* markaziy play */
 .play {
   position: absolute;
   left: 50%;
@@ -275,9 +285,8 @@ const scrollByCard = (dir: 1 | -1) => {
   place-items: center;
   color: red;
   font-weight: 700;
-  border: 2px solid #fff;
-  background: rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(2px);
+  background: transparent;
+  border: none;
 }
 
 /* overlay controls (faqat playing) */

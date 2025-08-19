@@ -1,12 +1,11 @@
 <!-- components/BenefitSection.vue -->
 <template>
   <section id="benefits" class="benefit-section position-relative py-5">
-    <div class="container position-relative">
+    <div class="classformargin position-relative">
       <!-- title -->
       <div class="text-center mb-5">
-        <h2 class="section-title m-0">
-          <span class="accent">"Неврослим"</span>
-          <span class="ms-1">ни неча ёшдан истеъмол қилса бўлади?</span>
+        <h2 class="display-title section-title m-0">
+          <span class="duo">"Неврослим" ни неча ёшдан истеъмол қилса бўлади?</span>
         </h2>
       </div>
 
@@ -213,6 +212,10 @@ const props = withDefaults(
   border: 1px solid #e6ecf5;
   border-radius: 18px;
   box-shadow: 0 8px 28px rgba(6, 24, 44, 0.06);
+  transition: transform 0.6s ease;
+}
+.soft-card:hover {
+  transform: translateY(-15px);
 }
 
 /* title */

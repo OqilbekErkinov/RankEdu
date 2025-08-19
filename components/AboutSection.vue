@@ -1,20 +1,24 @@
 <!-- components/AboutSection.vue -->
 <template>
-  <section id="about" class="about-wrap pb-5 position-relative">
-    <div class="container mb-5">
+  <section
+    id="about"
+    class="about-wrap pb-5 position-relative"
+    ref="sectionRef"
+  >
+    <div class="classformargin mb-5">
       <div class="extracts-box mx-auto">
         <div class="extracts-head text-center">
-          <h2 class="section-title mb-0">
-            Маҳсулот таркибидаги
-            <span class="text-accent">“Экстракт”</span>ларнинг организмга
-            фойдалари
+          <h2 class="display-title section-title mb-0">
+            <span class="duo"
+              >Маҳсулот таркибидаги “Экстракт”ларнинг организмга фойдалари</span
+            >
           </h2>
         </div>
 
         <div class="row g-3 extracts-grid">
           <!-- chap ustun -->
           <div class="col-12 col-lg-6">
-            <div class="extract-item">
+            <div class="extract-item reveal-left">
               <div class="thumb">
                 <img src="/images/ginkgo.webp" alt="Гинкго билоба" />
               </div>
@@ -27,7 +31,7 @@
               </div>
             </div>
 
-            <div class="extract-item">
+            <div class="extract-item reveal-left">
               <div class="thumb">
                 <img src="/images/blackroot.webp" alt="Қора андиз" />
               </div>
@@ -39,7 +43,7 @@
               </div>
             </div>
 
-            <div class="extract-item mb-0">
+            <div class="extract-item mb-0 reveal-left">
               <div class="thumb">
                 <img src="/images/mumie.webp" alt="Мумийё" />
               </div>
@@ -54,20 +58,20 @@
 
           <!-- o‘ng ustun -->
           <div class="col-12 col-lg-6">
-            <div class="extract-item">
+            <div class="extract-item reveal-right">
               <div class="thumb">
                 <img src="/images/valeriana.webp" alt="Валериана" />
               </div>
               <div class="text">
                 <h5 class="item-title">Валериана</h5>
                 <p class="item-desc">
-                  Стрессни енгиллаштириб, дам олишга ёрдам беради ва уйқу
-                  сифатини яхшилайди.
+                  Стрессни енгиллаштириб, дам олишга ёрдам беради ва уйқу сифати
+                  ни яхшилайди.
                 </p>
               </div>
             </div>
 
-            <div class="extract-item">
+            <div class="extract-item reveal-right">
               <div class="thumb">
                 <img src="/images/ginger.webp" alt="Занжабил" />
               </div>
@@ -80,7 +84,7 @@
               </div>
             </div>
 
-            <div class="extract-item mb-0">
+            <div class="extract-item mb-0 reveal-right">
               <div class="thumb">
                 <img src="/images/cinnamon.webp" alt="Долчин" />
               </div>
@@ -95,20 +99,19 @@
           </div>
         </div>
 
-        <!-- pastki chiziq (figmadagi borderga o‘xshash) -->
         <div class="extracts-foot"></div>
       </div>
     </div>
 
-    <!-- ============ 2) Сертификатланган (Figma sahna) ============ -->
-    <div class="container">
+    <!-- ============ 2) Сертификатланган sahnasi ============ -->
+    <div class="classformargin">
       <div class="cert-box mx-auto">
         <div class="row align-items-center g-4">
-          <!-- chap: timeline (o'zgarmagan) -->
+          <!-- chap: timeline (typing) -->
           <div class="col-12 col-lg-5">
             <h3 class="section-title mb-4">Сертификатланган</h3>
 
-            <ul class="timeline list-unstyled">
+            <ul class="timeline list-unstyled" ref="timelineRef">
               <li class="titem">
                 <div class="dot"></div>
                 <div>
@@ -149,17 +152,15 @@
             </ul>
           </div>
 
-          <!-- o‘ng: sahna/slider figma-style -->
+          <!-- o‘ng: sahna/slider -->
           <div class="col-12 col-lg-7">
             <div class="cert-stage">
-              <!-- orqa kartochka (tilted) -->
               <img
                 class="doc doc-bg doc-1"
                 :src="certs[(certIndex + 1) % certs.length]"
                 alt="certificate bg"
                 draggable="false"
               />
-              <!-- oldingi asosiy sertifikat (tilted) -->
               <img
                 class="doc doc-fg doc-2"
                 :src="certs[certIndex]"
@@ -167,7 +168,6 @@
                 draggable="false"
               />
 
-              <!-- ichki ko'k navigatsiya tugmalari -->
               <button
                 class="nav in left ps-2"
                 @click="prevCert"
@@ -221,7 +221,6 @@
                 </svg>
               </button>
 
-              <!-- pager -->
               <div class="pager">
                 <span
                   v-for="(c, i) in certs"
@@ -232,7 +231,6 @@
                 />
               </div>
 
-              <!-- kattalashtirish (ixtiyoriy) -->
               <button
                 class="zoom"
                 @click="openZoom(certs[certIndex])"
@@ -266,7 +264,7 @@
       </div>
     </div>
 
-    <!-- Oddiy zoom modal -->
+    <!-- Zoom modal -->
     <div v-if="zoomSrc" class="zoom-backdrop" @click="zoomSrc = null">
       <img :src="zoomSrc" class="zoom-img" alt="certificate large" />
     </div>
@@ -274,18 +272,94 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
-// Sertifikat rasmlari (o'zingdagi fayl nomlarini qo'y)
+/* ====== Slider images ====== */
 const certs = ["/images/cert1.webp", "/images/cert2.webp"];
 const certIndex = ref(0);
 const nextCert = () => (certIndex.value = (certIndex.value + 1) % certs.length);
 const prevCert = () =>
   (certIndex.value = (certIndex.value - 1 + certs.length) % certs.length);
 
-// Zoom (ixtiyoriy)
+/* ====== Zoom ====== */
 const zoomSrc = ref<string | null>(null);
 const openZoom = (src: string) => (zoomSrc.value = src);
+
+/* ====== Scroll animations ====== */
+const sectionRef = ref<HTMLElement | null>(null);
+const timelineRef = ref<HTMLElement | null>(null);
+const typedOnce = ref(false);
+
+function typeOne(el: HTMLElement, cps = 18) {
+  return new Promise<void>((resolve) => {
+    const full = (el.getAttribute("data-full") ?? el.textContent ?? "").trim();
+    el.setAttribute("data-full", full);
+    el.textContent = "";
+    let i = 0;
+    const period = Math.max(15, Math.round(1000 / cps));
+    const timer = window.setInterval(() => {
+      // caret effekt
+      el.textContent =
+        full.slice(0, i) + (i < full.length ? (i % 2 ? "|" : " ") : "");
+      i++;
+      if (i > full.length) {
+        window.clearInterval(timer);
+        el.textContent = full;
+        resolve();
+      }
+    }, period);
+  });
+}
+
+async function runTyping() {
+  if (!timelineRef.value) return;
+  const items = Array.from(
+    timelineRef.value.querySelectorAll<HTMLElement>(".titem")
+  );
+  for (const li of items) {
+    const title = li.querySelector<HTMLElement>(".t-title");
+    const desc = li.querySelector<HTMLElement>(".t-desc");
+    if (title) await typeOne(title, 16);
+    if (desc) await typeOne(desc, 22);
+  }
+}
+
+onMounted(() => {
+  const root = sectionRef.value;
+  if (!root) return;
+
+  // 1) Reveal (chap/o‘ng) — extract kartalari
+  const revealEls = Array.from(
+    root.querySelectorAll<HTMLElement>(".reveal-left, .reveal-right")
+  );
+  const ioReveal = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          (e.target as HTMLElement).classList.add("in");
+          ioReveal.unobserve(e.target);
+        }
+      });
+    },
+    { threshold: 0.2 }
+  );
+  revealEls.forEach((el) => ioReveal.observe(el));
+
+  // 2) Typing — timeline faqat bir marta
+  if (timelineRef.value) {
+    const ioType = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting) && !typedOnce.value) {
+          typedOnce.value = true;
+          runTyping();
+          ioType.disconnect();
+        }
+      },
+      { threshold: 0.35 }
+    );
+    ioType.observe(timelineRef.value);
+  }
+});
 </script>
 
 <style scoped>
@@ -310,9 +384,6 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   font-size: 40px;
   max-width: 999px;
   margin: auto;
-}
-.text-accent {
-  color: #0000ff;
 }
 
 /* ====== EXTRACTS ====== */
@@ -339,6 +410,11 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   border-radius: 14px;
   padding: 8px;
   margin-bottom: 14px;
+  transition: transform 0.35s ease, background 0.35s ease, opacity 0.35s ease;
+}
+.extract-item:hover {
+  background: #e8efff;
+  transform: translateY(-5px);
 }
 .thumb {
   flex: 0 0 140px;
@@ -430,7 +506,7 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   margin-left: 1.5rem;
 }
 
-/* === CERT: Figma sahna === */
+/* === CERT stage === */
 .cert-stage {
   position: relative;
   border-radius: 16px;
@@ -438,8 +514,6 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   overflow: hidden;
   min-height: 620px;
 }
-
-/* umumiy rasm stillari */
 .doc {
   width: 58%;
   height: auto;
@@ -464,7 +538,7 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   left: 40%;
 }
 
-/* ichki navigatsiya tugmalari */
+/* inner navs */
 .nav.in {
   position: absolute;
   top: 50%;
@@ -488,7 +562,7 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   right: 50px;
 }
 
-/* pager – kapsul ko‘rinishi */
+/* pager */
 .pager {
   position: absolute;
   left: 50%;
@@ -511,7 +585,7 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   background: #7fb0ff;
 }
 
-/* zoom tugmasi (past-o‘ng) */
+/* zoom button */
 .zoom {
   position: absolute;
   right: 52px;
@@ -524,7 +598,7 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   background: transparent;
 }
 
-/* zoom modal (oddiy) */
+/* zoom modal */
 .zoom-backdrop {
   position: fixed;
   inset: 0;
@@ -536,6 +610,34 @@ const openZoom = (src: string) => (zoomSrc.value = src);
   max-width: 92vw;
   max-height: 92vh;
   border-radius: 12px;
+}
+
+/* ====== Scroll reveal (chap/o‘ng) ====== */
+.reveal-left,
+.reveal-right {
+  opacity: 0;
+  transform: translateX(var(--dx, 0));
+}
+.reveal-left {
+  --dx: -40px;
+}
+.reveal-right {
+  --dx: 40px;
+}
+.reveal-left.in,
+.reveal-right.in {
+  opacity: 1;
+  transform: translateX(0);
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.7s;
+}
+
+/* Reduce motion: typing caret o‘rniga oddiy fade */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-left,
+  .reveal-right {
+    transition: opacity 0.1s ease;
+    transform: none !important;
+  }
 }
 
 /* ====== RESPONSIVE ====== */

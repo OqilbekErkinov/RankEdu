@@ -1,12 +1,9 @@
 <template>
   <section id="diseases" class="diseases py-5 mb-5">
-    <div class="container">
+    <div class="classformargin">
       <div class="box mx-auto">
-        <h2 class="title text-center mb-4">
-          "<span class="accent">Неврослим</span>" қандай касалликларни<br
-            class="d-none d-md-inline"
-          />
-          даволайди?
+        <h2 class="display-title title text-center mb-4">
+          <span class="duo">Неврослим қандай касалликларни даволайди?</span>
         </h2>
 
         <div class="stage position-relative mx-auto">
@@ -72,6 +69,39 @@ const allBubbles = [...leftBubbles, ...rightBubbles];
 // pill joylashuvi (desktop)
 const pillStyle = (side: "left" | "right", y: number) =>
   ({ top: `${y}%`, [side]: "14px" } as const);
+
+import { onMounted } from "vue";
+
+/* Pills scrollda bittadan paydo bo‘lishi */
+onMounted(() => {
+  const stage = document.querySelector(
+    "#diseases .stage"
+  ) as HTMLElement | null;
+  if (!stage) return;
+
+  const pills = Array.from(stage.querySelectorAll<HTMLElement>(".pill"));
+
+  // Boshlang'ich holat: yashirin
+  pills.forEach((el) => el.classList.add("will-reveal"));
+
+  // Sahna ko‘ringanda ketma-ket ko‘rsatamiz
+  const io = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        // Yuqoridan pastga tartiblash
+        pills.sort((a, b) => a.offsetTop - b.offsetTop);
+
+        pills.forEach((el, i) => {
+          setTimeout(() => el.classList.add("in"), i * 160); // 160ms step
+        });
+        io.disconnect();
+      }
+    },
+    { threshold: 0.25 }
+  );
+
+  io.observe(stage);
+});
 </script>
 
 <style scoped>
@@ -133,6 +163,10 @@ const pillStyle = (side: "left" | "right", y: number) =>
   color: #003262;
   max-width: 400px;
   font-size: 17px;
+  transition: transform 0.5s ease;
+}
+.pill:hover {
+  transform: scale(1.2);
 }
 .pill.left {
   text-align: left;
@@ -188,7 +222,48 @@ const pillStyle = (side: "left" | "right", y: number) =>
     right: 0 !important;
   }
   .product {
-    margin-top: 4rem
+    margin-top: 4rem;
   }
 }
+@keyframes floating {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.product {
+  animation: floating 8s ease-in-out infinite;
+  z-index: 0;
+}
+
+/* === Scroll reveal (bittadan) === */
+.pill.will-reveal {
+  opacity: 0;
+  transform: translateX(var(--dx, 0)) scale(0.98);
+  will-change: transform, opacity;
+}
+.pill.left.will-reveal  { --dx: -28px; }
+.pill.right.will-reveal { --dx:  28px; }
+
+/* Ko‘ringan holat */
+.pill.in {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  transition: transform .55s cubic-bezier(.2,.7,.2,1), opacity .55s;
+}
+
+/* Harakatni kamaytirish rejimi */
+@media (prefers-reduced-motion: reduce) {
+  .pill.will-reveal, .pill.in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 </style>

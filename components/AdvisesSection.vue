@@ -1,12 +1,13 @@
 <!-- components/AdvisesSection.vue -->
 <template>
   <section id="results" class="advises pb-5">
-    <div class="container">
+    <div class="classformargin">
       <!-- Title -->
       <div class="text-center mb-4 mb-lg-5">
-        <h1 class="section-title">
-          <span class="accent">Мижозларимиз</span>
-          “Неврослим” ҳақида нима дейишади?
+        <h1 class="display-title section-title">
+          <span class="duo"
+            >Мижозларимиз “Неврослим” ҳақида нима дейишади?</span
+          >
         </h1>
       </div>
 
@@ -23,51 +24,19 @@
               @click="playInline(id)"
             />
 
-            <!-- Inline iframe (cover) -->
-            <iframe
-              v-else
-              :id="`adv-player-${id}`"
-              class="embed-cover"
-              :src="inlineUrl(id)"
-              title="video"
-              allow="autoplay; fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-            />
-
-            <!-- Videoning o'zini bosib pause / play -->
-            <button
-              v-if="playingId === id"
-              class="click-catcher"
-              aria-label="Toggle"
-              @click.stop="togglePlay(id)"
-            ></button>
-
-            <!-- Overlay controls (faqat oynayotganda) -->
-            <div v-if="playingId === id" class="overlay-controls">
-              <button
-                class="ctrl"
-                @click.stop="togglePlay(id)"
-                aria-label="Pause/Play"
-              >
-                ❚❚ / ▶
-              </button>
-              <button
-                class="ctrl"
-                @click.stop="openShorts(id)"
-                aria-label="Shorts"
-              >
-                Shorts
-              </button>
-              <button
-                class="ctrl"
-                @click.stop="goFullscreen(id)"
-                aria-label="Fullscreen"
-              >
-                ⛶
-              </button>
+            <!-- Inline iframe (YouTube controls ON) -->
+            <div v-else class="ratio ratio-16x9">
+              <iframe
+                :id="`adv-player-${id}`"
+                class="yt-iframe"
+                :src="inlineUrl(id)"
+                title="video"
+                allow="autoplay; fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+              />
             </div>
 
-            <!-- Markaziy play: boshlash yoki fullscreen -->
+            <!-- Markaziy play tugmasi (videoni boshlash uchun) -->
             <button
               v-if="playingId !== id"
               class="play-overlay btn p-0 border-0"
@@ -75,7 +44,14 @@
               @click.stop="playInline(id)"
             >
               <span class="play-btn">
-                <i class="bi bi-play-fill fs-4 text-primary"></i>
+                <svg height="100%" viewBox="0 0 68 48" width="100%">
+                  <path
+                    class="ytp-large-play-button-bg"
+                    d="M66.52,7.74c-0.78-2.93-2.49-5.41-5.42-6.19C55.79,.13,34,0,34,0S12.21,.13,6.9,1.55 C3.97,2.33,2.27,4.81,1.48,7.74C0.06,13.05,0,24,0,24s0.06,10.95,1.48,16.26c0.78,2.93,2.49,5.41,5.42,6.19 C12.21,47.87,34,48,34,48s21.79-0.13,27.1-1.55c2.93-0.78,4.64-3.26,5.42-6.19C67.94,34.95,68,24,68,24S67.94,13.05,66.52,7.74z"
+                    fill="#f03"
+                  />
+                  <path d="M45,24 27,14 27,34" fill="#fff"></path>
+                </svg>
               </span>
             </button>
           </div>
@@ -89,7 +65,11 @@
           :key="'g' + i"
           class="col-12 col-md-6 col-lg-3"
         >
-          <div class="thumb soft-card">
+          <div
+            class="thumb soft-card"
+            @click="openImageFullscreen(img)"
+            role="button"
+          >
             <img :src="img" alt="gallery item" />
           </div>
         </div>
@@ -113,7 +93,7 @@
       </div>
     </div>
 
-    <!-- Fallback fullscreen modal -->
+    <!-- (Video) Fallback fullscreen modal — hozircha ishlatilmaydi, lekin qoldirdik -->
     <div class="modal fade" id="advVideoModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content border-0 bg-black">
@@ -125,6 +105,31 @@
               title="Fullscreen video"
               allow="autoplay; fullscreen; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image fullscreen modal -->
+    <div class="modal fade" id="imgFullscreen" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content border-0 bg-black">
+          <!-- Close button -->
+          <button
+            type="button"
+            class="btn-close btn-close-white fs-close"
+            aria-label="Close"
+            data-bs-dismiss="modal"
+            @click="closeImageFullscreen"
+          ></button>
+
+          <div class="d-flex align-items-center justify-content-center h-100">
+            <img
+              v-if="currentImg"
+              :src="currentImg"
+              class="img-fs"
+              alt="preview"
             />
           </div>
         </div>
@@ -149,7 +154,6 @@ type Props = {
 };
 
 const props = withDefaults(defineProps<Props>(), {
-  // O'zingizning videolaringiz IDlarini qo'ying
   videoIds: () => ["pRV-sBORRfI", "2M6Uui9OWT8"],
   gallery4: () => [
     "/images/advise1.webp",
@@ -167,25 +171,18 @@ const props = withDefaults(defineProps<Props>(), {
   playerSubtitle: "Nevroslim",
 });
 
-/* ---- ExpertsSection dagidek boshqaruvlar ---- */
+/* ---- Video boshqaruvlari ---- */
 const playingId = ref<string | null>(null);
+
+/* YouTube inline URL: controls=1 → YouTube ikonkalari ko‘rinadi */
 const inlineUrl = (id: string) =>
-  `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&playsinline=1&controls=0&modestbranding=1&rel=0`;
+  `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&controls=1&modestbranding=1&rel=0&fs=1&enablejsapi=1&origin=${location.origin}`;
 
 const playInline = (id: string) => {
   playingId.value = id;
 };
 
-/* pause/play — YouTube API’siz: iframe’ni olib tashlab qayta qo’yish */
-const togglePlay = (id: string) => {
-  playingId.value = playingId.value === id ? null : id;
-};
-
-/* Shorts */
-const openShorts = (id: string) =>
-  window.open(`https://www.youtube.com/shorts/${id}`, "_blank");
-
-/* Fullscreen (true fullscreen → modal fallback) */
+/* Fullscreen (true fullscreen → modal fallback) — qoldirilgan */
 const currentId = ref<string | null>(null);
 const modalUrl = computed(() =>
   currentId.value
@@ -193,45 +190,60 @@ const modalUrl = computed(() =>
     : ""
 );
 
-const goFullscreen = async (id: string) => {
-  const iframe = document.getElementById(
-    `adv-player-${id}`
-  ) as HTMLIFrameElement | null;
-  if (iframe && iframe.requestFullscreen) {
-    try {
-      await iframe.requestFullscreen();
-      return;
-    } catch {}
-  }
-  // Fallback: Bootstrap modal
-  currentId.value = id;
-  const el = document.getElementById("advVideoModal")!;
+/* ---- Image fullscreen ---- */
+const currentImg = ref<string | null>(null);
+
+const escClose = (e: KeyboardEvent) => {
+  if (e.key === "Escape") closeImageFullscreen();
+};
+
+const closeImageFullscreen = () => {
+  const el = document.getElementById("imgFullscreen")!;
   // @ts-ignore
   const BS = (window as any).bootstrap;
   if (BS?.Modal) {
+    const inst = BS.Modal.getInstance(el) || BS.Modal.getOrCreateInstance(el);
+    inst.hide();
+  } else {
+    el.classList.remove("show");
+    el.style.display = "none";
+    el.setAttribute("aria-hidden", "true");
+  }
+  currentImg.value = null;
+  document.removeEventListener("keydown", escClose);
+};
+
+const openImageFullscreen = (src: string) => {
+  currentImg.value = src;
+  const el = document.getElementById("imgFullscreen")!;
+  // @ts-ignore
+  const BS = (window as any).bootstrap;
+
+  if (BS?.Modal) {
     const modal = BS.Modal.getOrCreateInstance(el);
     modal.show();
-    const onHidden = () => {
-      currentId.value = null;
-      el.removeEventListener("hidden.bs.modal", onHidden);
-    };
-    el.addEventListener("hidden.bs.modal", onHidden);
+    el.addEventListener(
+      "hidden.bs.modal",
+      () => {
+        currentImg.value = null;
+        document.removeEventListener("keydown", escClose);
+      },
+      { once: true }
+    );
   } else {
-    // Eng oddiy fallback
+    // Fallback
     el.classList.add("show");
     el.style.display = "block";
     el.removeAttribute("aria-hidden");
-    const close = (e: MouseEvent) => {
-      if (e.target === el) {
-        el.classList.remove("show");
-        el.style.display = "none";
-        el.setAttribute("aria-hidden", "true");
-        currentId.value = null;
-        el.removeEventListener("click", close);
-      }
+
+    const backdropClose = (e: MouseEvent) => {
+      if (e.target === el) closeImageFullscreen();
     };
-    el.addEventListener("click", close);
+    el.addEventListener("click", backdropClose, { once: true });
   }
+
+  // ESC bilan yopish
+  document.addEventListener("keydown", escClose);
 };
 </script>
 
@@ -246,10 +258,18 @@ const goFullscreen = async (id: string) => {
 }
 
 .video-card {
-  min-height: 477px; /* rasm/iframe uchun konteyner balandligi */
+  min-height: 477px; /* konteyner balandligi (thumb/iframe) */
   margin-bottom: 2rem;
 }
 
+/* YouTube iframe to‘liq ko‘rinsin, ichida o‘z controls chiqadi */
+.yt-iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Markaziy play overlay */
 .play-overlay {
   position: absolute;
   inset: 0;
@@ -257,18 +277,17 @@ const goFullscreen = async (id: string) => {
   place-items: center;
   background: transparent;
 }
-
 .play-btn {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
+  background: transparent;
   display: grid;
   place-items: center;
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: none;
 }
 
+/* Cardlar */
 .soft-card {
   background: #e8efff;
   border-radius: 24px;
@@ -279,6 +298,7 @@ const goFullscreen = async (id: string) => {
   border-radius: 18px;
   border: 1px solid #e6ecf5;
   overflow: hidden;
+  cursor: pointer;
 }
 .thumb img {
   width: 100%;
@@ -286,49 +306,24 @@ const goFullscreen = async (id: string) => {
   object-fit: cover;
 }
 
-/* YouTube iframeni "cover" qilib joylashtirish */
-.embed-cover {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  height: 100%;
-  width: 177.78%;
-  transform: translate(-50%, -50%);
-  border: 0;
+/* Fullscreen image styling */
+.img-fs {
+  max-width: 100%;
+  max-height: 100vh;
+  object-fit: contain;
+}
+/* Modal kontent nisbiy bo‘lsin — tugma joylashishi uchun */
+#imgFullscreen .modal-content {
+  position: relative;
 }
 
-/* Video ustiga bosib pause/play qilish uchun shaffof qatlam */
-.click-catcher {
+/* Close button (oq x) */
+.fs-close {
   position: absolute;
-  inset: 0;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-}
-
-/* Overlay controls (faqat playing paytida) */
-.overlay-controls {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 10px;
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-  padding: 6px 10px;
-}
-.ctrl {
-  appearance: none;
-  border: 0;
-  background: rgba(255, 255, 255, 0.94);
-  color: #0a2a5c;
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
+  top: 12px;
+  right: 7rem;
+  z-index: 2;
+  filter: invert(1); /* qorong‘i fon ustida oq bo‘lib ko‘rinsin */
 }
 
 @media (min-width: 992px) {
@@ -340,8 +335,11 @@ const goFullscreen = async (id: string) => {
   .section-title {
     font-size: 24px;
   }
-  .video-card[data-v-0cb8c9e8] {
+  .video-card {
     min-height: 250px !important;
   }
+}
+.ratio-16x9 {
+  --bs-aspect-ratio: 75%;
 }
 </style>

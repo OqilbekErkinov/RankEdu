@@ -9,7 +9,7 @@
       </div>
     </div>
 
-    <div class="container">
+    <div class="classformargin">
       <!-- COUNTDOWN + FORM -->
       <div
         class="soft-card position-relative border-2 border-primary rounded-4"
@@ -93,23 +93,47 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, reactive } from "vue";
+import { onMounted, onBeforeUnmount, reactive, ref } from "vue";
 
-/* COUNTDOWN (default: 12 soat) */
-const target = new Date();
-target.setHours(target.getHours() + 12);
+/* ===== COUNTDOWN: 2 soat per-session ===== */
+const SESSION_KEY = "nevro_countdown_deadline"; // sessionStorage kaliti
+const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
 const left = reactive({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+const deadlineMs = ref<number>(0);
 let t: number | undefined;
 
-function tick() {
-  const now = new Date().getTime();
-  const diff = Math.max(0, target.getTime() - now);
+/** Sessiya uchun deadline’ni o‘rnatish yoki sessionStorage’dan olish */
+function initDeadline() {
+  const now = Date.now();
+  const saved = sessionStorage.getItem(SESSION_KEY);
+  const parsed = saved ? parseInt(saved, 10) : NaN;
 
-  left.days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  left.hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-  left.minutes = Math.floor((diff / (1000 * 60)) % 60);
-  left.seconds = Math.floor((diff / 1000) % 60);
+  if (!Number.isFinite(parsed) || parsed <= now) {
+    // Yangi sessiya yoki avvalgi deadline tugagan → 2 soatdan boshlab beramiz
+    deadlineMs.value = now + TWO_HOURS_MS;
+    sessionStorage.setItem(SESSION_KEY, String(deadlineMs.value));
+  } else {
+    deadlineMs.value = parsed;
+  }
+}
+
+/** Har 1 soniyada yangilash */
+function tick() {
+  const now = Date.now();
+  let diff = deadlineMs.value - now;
+
+  if (diff <= 0) {
+    // Shu sessiyada ham nolga yetganda — yana 2 soatga qayta o‘rnatamiz
+    deadlineMs.value = now + TWO_HOURS_MS;
+    sessionStorage.setItem(SESSION_KEY, String(deadlineMs.value));
+    diff = deadlineMs.value - now;
+  }
+
+  left.days = Math.floor(diff / 86400000);
+  left.hours = Math.floor((diff % 86400000) / 3600000);
+  left.minutes = Math.floor((diff % 3600000) / 60000);
+  left.seconds = Math.floor((diff % 60000) / 1000);
 }
 
 function padLeft(n: number) {
@@ -117,55 +141,45 @@ function padLeft(n: number) {
 }
 
 onMounted(() => {
+  initDeadline();
   tick();
   t = window.setInterval(tick, 1000);
 });
+
 onBeforeUnmount(() => {
   if (t) window.clearInterval(t);
 });
 
-/* FORM */
+/* ===== FORM (o'zingizniki qolgani kabi) ===== */
 const form = reactive({ name: "", phone: "" });
 function submit() {
-  // shu yerda real submit qilishingiz mumkin
   alert(`Qabul qilindi:\nIsm: ${form.name}\nTelefon: ${form.phone}`);
 }
 
-/* PARTICIPANTS MOCK */
+/* Mock participants (kerak bo‘lsa ishlatasiz) */
 const participants = [
-  {
-    name: "Cassie Jung",
-    img: "/images/call1.webp",
-    muted: true,
-  },
-  {
-    name: "Alice Wong",
-    img: "/images/call2.webp",
-    muted: false,
-  },
-  {
-    name: "Theresa Webb",
-    img: "/images/call3.webp",
-    muted: false,
-  },
-  {
-    name: "Christian Wong",
-    img: "/images/call4.webp",
-    muted: true,
-  },
+  { name: "Cassie Jung", img: "/images/call1.webp", muted: true },
+  { name: "Alice Wong", img: "/images/call2.webp", muted: false },
+  { name: "Theresa Webb", img: "/images/call3.webp", muted: false },
+  { name: "Christian Wong", img: "/images/call4.webp", muted: true },
 ];
 </script>
 
 <style scoped>
-/* global soft look */
-.soft-card {
-}
-.soft-inner {
+/* ---- Design tokens (faqat shu komponent ichida ishlatiladi) ---- */
+:host {
+  --c-primary: #0000ff;
+  --c-text: #01101e;
+  --c-accent: #003262;
+  --c-border: #b3c8d8;
+  --c-soft-bg: #f4f8ff;
+  --c-card: #ffffff;
 }
 
-/* promo ticker */
+/* ---- Promo ticker ---- */
 .promo-ticker {
   background: #ffc107;
+  color: #111827;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -173,6 +187,7 @@ const participants = [
   display: inline-block;
   padding-block: 6px;
   animation: scroll 16s linear infinite;
+  will-change: transform;
 }
 @keyframes scroll {
   from {
@@ -183,119 +198,92 @@ const participants = [
   }
 }
 
-/* timer */
+/* ---- Cardlar ---- */
+.soft-card {
+  background: var(--c-soft-bg);
+  border-radius: 24px;
+}
+.soft-inner {
+  background: var(--c-card);
+  border-radius: 16px;
+}
+
+/* ---- Timer ---- */
+.timer {
+  padding-block: 0.75rem;
+}
+.timer .time-block {
+  text-align: center;
+}
 .timer .time-block .digits {
-  font-size: 109px;
-  line-height: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
   font-weight: 500;
-  color: #003262;
+  line-height: 1;
+  color: var(--c-accent);
+  font-size: clamp(40px, 9vw, 109px);
 }
 .timer .time-block .legend {
   font-size: 0.75rem;
   color: #6b7a99;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  text-align: center;
   margin-top: 0.25rem;
 }
 
-/* video */
-.main-video {
-  height: 420px;
-}
-@media (max-width: 991.98px) {
-  .main-video {
-    height: 280px;
-  }
+/* ---- Lead matn ---- */
+.timer-text {
+  max-width: 432px;
+  color: var(--c-text);
+  font-size: clamp(16px, 1.6vw, 18px);
+  margin-top: -2rem;
 }
 
-.badge-pill {
-  background: rgba(255, 255, 255, 0.85);
-  padding: 6px 12px;
-  border-radius: 20px;
+/* ---- Form ---- */
+.contact-page .form-control {
+  color: var(--c-accent);
+  border: 1px solid var(--c-border);
+  padding: 0.8rem 0.9rem;
+  border-radius: 12px;
+}
+.contact-page .form-control::placeholder {
+  color: #7a96ad;
+}
+.contact-page .form-control:focus {
+  border-color: var(--c-primary);
+  box-shadow: 0 0 0 0.2rem rgba(0, 0, 255, 0.12);
+}
+
+/* ---- Submit tugma ---- */
+.contact-page .btn {
+  background: var(--c-primary);
+  color: #fdfeff;
+  border-radius: 12px;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
-.badge-pill .dot {
-  width: 8px;
-  height: 8px;
-  background: #ef4444;
-  border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+.contact-page .btn:hover {
+  filter: brightness(0.95);
+}
+.contact-page .btn:active {
+  transform: translateY(1px);
 }
 
-.icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid #e6ecf5;
-  background: #fff;
-  display: grid;
-  place-items: center;
-}
-
-.role-chip {
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  padding: 0.35rem 0.6rem;
-  border-radius: 14px;
-  font-size: 0.85rem;
-}
-
-.participant {
-  height: 140px;
-  background: #eee;
-}
-@media (max-width: 767.98px) {
-  .participant {
-    height: 120px;
+/* ---- Responsive ---- */
+@media (max-width: 992px) {
+  .timer-text {
+    margin-top: 0;
+    max-width: none;
   }
-}
-
-.bg-gradient {
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
-}
-.icon-badge {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-}
-
-/* controls */
-.circle-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 1px solid #e6ecf5;
-  background: #fff;
-  display: grid;
-  place-items: center;
-}
-.circle-btn.active {
-  background: #eaf1ff;
-  border-color: #d9e4ff;
-}
-.circle-btn.record {
-  background: #ffecec;
-  border-color: #ffd2d2;
 }
 @media (max-width: 600px) {
-  .timer .time-block .digits{
+  .timer .time-block .digits {
     font-size: 56px;
   }
-  .timer-text {
-    font-size: 16px !important;
-    margin-top: 2rem !important;
-    max-width: none !important;
-  }
   .soft-inner {
-    padding: 0 !important;
+    padding: 0;
+  }
+  .timer-text {
+    margin-top: 2rem !important;
   }
 }
 </style>

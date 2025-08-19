@@ -51,8 +51,6 @@
           <a href="#contact" class="nav-link">
           <button
             class="btn btn-brand d-flex align-items-center gap-2"
-            data-bs-toggle="modal"
-            data-bs-target="#orderModal"
           >
             Буйртма бериш
             <svg

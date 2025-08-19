@@ -1,7 +1,7 @@
 <!-- components/FooterSection.vue -->
 <template>
   <footer class="site-footer py-5">
-    <div class="container">
+    <div class="classformargin">
       <!-- top hairline -->
       <hr class="footer-line mb-4" />
 
