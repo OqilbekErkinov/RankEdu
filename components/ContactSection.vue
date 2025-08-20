@@ -42,7 +42,7 @@
           </div>
 
           <!-- form -->
-          <div class="col-lg-6">
+          <div class="col-lg-4">
             <p
               class="mb-5 timer-text"
               style="
@@ -56,7 +56,7 @@
               ва яқинларингиз соғлигига бефарқ бўлманг
             </p>
           </div>
-          <div class="col-lg-6">
+          <div class="col-lg-4">
             <div class="soft-inner p-3 rounded-3">
               <div class="mb-4">
                 <input

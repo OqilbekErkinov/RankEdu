@@ -1,5 +1,5 @@
 <template>
-  <div class="soft-card p-4 big-player">
+  <div class="soft-card p-4 big-player" style="z-index: 104">
     <!-- Cover -->
     <div class="big-cover mb-3">
       <img src="/images/player.webp" alt="" class="w-100" />

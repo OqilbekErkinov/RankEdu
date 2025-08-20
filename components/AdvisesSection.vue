@@ -13,7 +13,7 @@
 
       <!-- Top video cards (YouTube by ID) -->
       <div class="row g-4 mb-2">
-        <div class="col-lg-6" v-for="(id, i) in videoIds" :key="'v' + i">
+        <div class="col-lg-6" style="z-index: 100" v-for="(id, i) in videoIds" :key="'v' + i">
           <div class="soft-card position-relative overflow-hidden video-card">
             <!-- Thumb -->
             <img
@@ -77,12 +77,12 @@
 
       <!-- Audio list + Big player -->
       <div class="row g-4 align-items-start">
-        <div class="col-lg-7">
+        <div class="col-lg-7" style="z-index: 100">
           <div class="d-flex flex-column" style="gap: 2.4rem">
             <AudioMini v-for="(a, i) in audios" :key="'a' + i" :src="a" />
           </div>
         </div>
-        <div class="col-lg-5">
+        <div class="col-lg-5" style="z-index: 100"> 
           <BigPlayer
             :src="audios?.[0]"
             :cover="cover"

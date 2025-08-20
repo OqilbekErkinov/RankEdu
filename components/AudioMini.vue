@@ -1,5 +1,5 @@
 <template>
-  <div class="audio-mini d-flex align-items-center gap-3 p-2 soft-card">
+  <div class="audio-mini d-flex align-items-center gap-3 p-2 soft-card" style="z-index: 100">
     <!-- Play/Pause -->
     <button
       class="btn rounded-circle p-0 d-grid place-items-center"
