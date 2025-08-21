@@ -5,6 +5,7 @@
     class="about-wrap pb-5 position-relative"
     ref="sectionRef"
   >
+    <!-- dekorativ SVG-lar -->
     <svg
       class="aboutdna"
       width="377"
@@ -248,8 +249,8 @@
         <div class="extracts-foot"></div>
       </div>
     </div>
-
-    <svg class="aboutdna2"
+    <svg
+      class="aboutdna2"
       width="396"
       height="206"
       viewBox="0 0 396 206"
@@ -272,7 +273,6 @@
       />
     </svg>
 
-    <!-- ============ 2) Сертификатланган sahnasi ============ -->
     <div class="classformargin">
       <div class="cert-box mx-auto">
         <div class="row align-items-center g-4">
@@ -350,12 +350,12 @@
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="M12 2.63965C6.47715 2.63965 2 7.1168 2 12.6396C2 18.1625 6.47715 22.6396 12 22.6396C17.5228 22.6396 22 18.1625 22 12.6396C22 7.1168 17.5228 2.63965 12 2.63965Z"
+                    d="M12 2.63965C6.477 2.63965 2 7.1168 2 12.6396C2 18.1625 6.477 22.6396 12 22.6396C17.5228 22.6396 22 18.1625 22 12.6396C22 7.1168 17.5228 2.63965 12 2.63965Z"
                     stroke="#0070FF"
                     stroke-width="2"
                   />
                   <path
-                    d="M13.4999 16.6399C13.4999 16.6399 10.4999 13.6939 10.4999 12.6399C10.4999 11.5858 13.4999 8.63989 13.4999 8.63989"
+                    d="M13.5 16.64C13.5 16.64 10.5 13.694 10.5 12.64C10.5 11.586 13.5 8.63989 13.5 8.63989"
                     stroke="#0070FF"
                     stroke-width="2"
                     stroke-linecap="round"
@@ -400,15 +400,11 @@
                 />
               </div>
 
-              <button
-                class="zoom"
-                @click="openZoom(certs[certIndex])"
-                aria-label="Zoom"
-              >
+              <button class="zoom" @click="openZoom()" aria-label="Zoom">
                 <svg
                   class="zoom-icon"
-                  width="32"
-                  height="32"
+                  width="26"
+                  height="26"
                   viewBox="0 0 32 32"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -433,15 +429,88 @@
       </div>
     </div>
 
-    <!-- Zoom modal -->
-    <div v-if="zoomSrc" class="zoom-backdrop" @click="zoomSrc = null">
-      <img :src="zoomSrc" class="zoom-img" alt="certificate large" />
-    </div>
+    <!-- === Zoom modal: qoraygan fon + close + prev/next === -->
+    <Teleport to="body">
+      <transition name="fade">
+        <div
+          v-if="isZoomOpen"
+          class="zoom-backdrop"
+          role="dialog"
+          aria-modal="true"
+          @click.self="closeZoom"
+        >
+          <div class="zoom-dialog" @click.stop>
+            <div class="zoom-stage">
+              <!-- orqa fon (bg) -->
+              <img
+                :src="certs[(certIndex + 1) % certs.length]"
+                class="zoom-doc zoom-bg"
+                alt="certificate bg"
+                draggable="false"
+              />
+
+              <!-- oldingi (fg) -->
+              <img
+                :src="certs[certIndex]"
+                class="zoom-doc zoom-fg"
+                :key="certIndex"
+                alt="certificate large"
+                draggable="false"
+              />
+            </div>
+
+            <!-- Close -->
+            <button class="zoom-close" @click="closeZoom" aria-label="Close">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+                <path
+                  d="M6 6L18 18M18 6L6 18"
+                  stroke="white"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </button>
+
+            <!-- Prev / Next -->
+            <button
+              class="zoom-arrow left"
+              @click="prevCert"
+              aria-label="Prev (Left Arrow)"
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M15 18L9 12L15 6"
+                  stroke="white"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              class="zoom-arrow right"
+              @click="nextCert"
+              aria-label="Next (Right Arrow)"
+            >
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M9 6L15 12L9 18"
+                  stroke="white"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 
 /* ====== Slider images ====== */
 const certs = ["/images/cert1.webp", "/images/cert2.webp"];
@@ -450,9 +519,31 @@ const nextCert = () => (certIndex.value = (certIndex.value + 1) % certs.length);
 const prevCert = () =>
   (certIndex.value = (certIndex.value - 1 + certs.length) % certs.length);
 
-/* ====== Zoom ====== */
-const zoomSrc = ref<string | null>(null);
-const openZoom = (src: string) => (zoomSrc.value = src);
+/* ====== Zoom (qoraygan fon + tugmalar) ====== */
+const isZoomOpen = ref(false);
+function openZoom() {
+  isZoomOpen.value = true;
+}
+function closeZoom() {
+  isZoomOpen.value = false;
+}
+
+/* Body scrollni bloklash va klaviatura bilan boshqarish */
+function onKey(e: KeyboardEvent) {
+  if (!isZoomOpen.value) return;
+  if (e.key === "Escape") closeZoom();
+  else if (e.key === "ArrowRight") nextCert();
+  else if (e.key === "ArrowLeft") prevCert();
+}
+watch(isZoomOpen, (open) => {
+  document.body.style.overflow = open ? "hidden" : "";
+  if (open) window.addEventListener("keydown", onKey);
+  else window.removeEventListener("keydown", onKey);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", onKey);
+  document.body.style.overflow = "";
+});
 
 /* ====== Scroll animations ====== */
 const sectionRef = ref<HTMLElement | null>(null);
@@ -467,7 +558,6 @@ function typeOne(el: HTMLElement, cps = 18) {
     let i = 0;
     const period = Math.max(15, Math.round(1000 / cps));
     const timer = window.setInterval(() => {
-      // caret effekt
       el.textContent =
         full.slice(0, i) + (i < full.length ? (i % 2 ? "|" : " ") : "");
       i++;
@@ -497,7 +587,7 @@ onMounted(() => {
   const root = sectionRef.value;
   if (!root) return;
 
-  // 1) Reveal (chap/o‘ng) — extract kartalari
+  // 1) Reveal (chap/o‘ng)
   const revealEls = Array.from(
     root.querySelectorAll<HTMLElement>(".reveal-left, .reveal-right")
   );
@@ -514,7 +604,7 @@ onMounted(() => {
   );
   revealEls.forEach((el) => ioReveal.observe(el));
 
-  // 2) Typing — timeline faqat bir marta
+  // 2) Typing — faqat bir marta
   if (timelineRef.value) {
     const ioType = new IntersectionObserver(
       (entries) => {
@@ -567,6 +657,17 @@ onMounted(() => {
 }
 .extracts-grid {
   padding: 10px 8px;
+}
+
+.aboutdna, .aboutdna2 {
+  position: absolute;
+}
+.aboutdna {
+  margin-top: -3rem
+}
+.aboutdna2 {
+  margin-top: -6rem;
+  right: 0;
 }
 
 .extract-item {
@@ -625,7 +726,7 @@ onMounted(() => {
   background: #f4f7ff;
 }
 
-/* Timeline bullets */
+/* Timeline */
 .timeline {
   position: relative;
   margin: 0;
@@ -753,43 +854,129 @@ onMounted(() => {
   background: #7fb0ff;
 }
 
-/* zoom button */
+/* zoom button (sahna ichida) */
 .zoom {
   position: absolute;
-  right: 52px;
+  right: 68px;
   bottom: 10px;
   border: 0;
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 10px;
   color: #0070ff;
   background: transparent;
 }
 
-/* zoom modal */
+/* ====== ZOOM MODAL (QORAYGAN FON + TUGMALAR) ====== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 .zoom-backdrop {
   position: fixed;
   inset: 0;
+  z-index: 2000;
   display: grid;
   place-items: center;
-  z-index: 1055;
+  background: rgba(0, 0, 0, 0.82);
+  cursor: zoom-out;
+}
+.zoom-dialog {
+  position: relative;
+  cursor: default;
+  max-width: 100vw;
+  max-height: 100vh;
 }
 .zoom-img {
-  max-width: 92vw;
-  max-height: 92vh;
+  display: block;
+  max-width: 9x9vw;
+  max-height: 9x9vh;
   border-radius: 12px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
 }
-
-.aboutdna,
-.aboutdna2 {
+.zoom-bg {
+  transform: translateX(50%) ;
+}
+.zoom-fg {
+  transform: translateX(-50%);
+}
+.zoom-close {
   position: absolute;
+  top: 12px;
+  right: -3rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }
-.aboutdna2 {
-  margin-left: 55rem;
-  margin-top: -6.5rem;
+.zoom-close:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
-/* ====== Scroll reveal (chap/o‘ng) ====== */
+.zoom-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.zoom-arrow:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+.zoom-arrow.left {
+  left: -60px;
+}
+.zoom-arrow.right {
+  right: -60px;
+}
+
+/* zoom modal — kichik ekranlar */
+@media (max-width: 768px) {
+  .zoom-img {
+    max-width: 94vw;
+    max-height: 84vh;
+  }
+  .zoom-arrow {
+    width: 44px;
+    height: 44px;
+  }
+  .zoom-arrow.left {
+    left: 8px;
+  }
+  .zoom-arrow.right {
+    right: 8px;
+  }
+}
+
+/* zoom modal — backdropdagi ikon/controls ko'rinishi aniq bo'lishi uchun */
+.zoom-backdrop button {
+  outline: none;
+}
+
+/* zoom modalga bosilganda tashqi qismni bosish bilan yopiladi */
+.zoom-dialog,
+.zoom-img {
+  cursor: default;
+}
+
+/* ====== Scroll reveal ====== */
 .reveal-left,
 .reveal-right {
   opacity: 0;
@@ -808,7 +995,7 @@ onMounted(() => {
   transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.7s;
 }
 
-/* Reduce motion: typing caret o‘rniga oddiy fade */
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   .reveal-left,
   .reveal-right {
