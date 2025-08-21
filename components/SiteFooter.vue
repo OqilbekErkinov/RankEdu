@@ -38,11 +38,11 @@ type Item = { label: string; to: string };
 
 const props = withDefaults(defineProps<{ items?: Item[] }>(), {
   items: () => [
-    { label: "Неврослим ҳақида", to: "/about" },
-    { label: "Касалликлар", to: "/diseases" },
-    { label: "Мутахассис", to: "/experts" },
-    { label: "Натижалар", to: "/results" },
-    { label: "Фойдалари", to: "/benefits" },
+    { label: "Неврослим ҳақида", to: "#about" },
+    { label: "Касалликлар", to: "#diseases" },
+    { label: "Мутахассис", to: "#experts" },
+    { label: "Натижалар", to: "#results" },
+    { label: "Фойдалари", to: "#benefits" },
   ],
 });
 </script>
