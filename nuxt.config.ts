@@ -26,6 +26,16 @@ export default defineNuxtConfig({
       siteName: 'Nevroslim'
     }
   },
+  modules: ['@nuxt/image'],
+  image: {
+    format: ['avif', 'webp'], // brauzer qaysi formatni qo‘llasa, o‘shani beradi
+    quality: 60,              // umumiy sifat (keyin komponentda override qilsa bo‘ladi)
+    screens: { sm: 640, md: 768, lg: 1024, xl: 1280 }
+  },
+  // (ixtiyoriy) IPX keshini kuchli qilish
+  routeRules: {
+    '/_ipx/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } }
+  },
 
   compatibilityDate: '2025-08-15'
 })

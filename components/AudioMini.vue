@@ -1,7 +1,7 @@
 <template>
   <div class="audio-mini d-flex align-items-center gap-3 p-2 soft-card" style="z-index: 100">
     <!-- Play/Pause -->
-    <button
+    <button aria-label="pause"
       class="btn rounded-circle p-0 d-grid place-items-center"
       style="width: 36px; height: 36px"
       @click="toggle"
@@ -20,6 +20,7 @@
       <div class="d-flex"></div>
       <div class="progress progress-sm mt-1">
         <div
+        aria-label="Audio loading progress"
           style="--bs-progress-bg: #74afff"
           class="progress-bar"
           role="progressbar"
@@ -29,7 +30,7 @@
     </div>
 
     <!-- Volume -->
-    <button class="btn btn-link text-muted p-0" @click="mute">
+    <button aria-label="dots" class="btn btn-link text-muted p-0" @click="mute">
       <i
         style="color: #003262"
         :class="muted ? 'bi bi-volume-mute' : 'bi bi-volume-up'"

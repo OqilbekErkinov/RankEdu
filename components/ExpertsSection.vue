@@ -114,6 +114,7 @@
         </button>
 
         <div
+          aria-label="Audio loading progress"
           class="pill-track"
           role="progressbar"
           :aria-valuenow="Math.round(progress * 100)"

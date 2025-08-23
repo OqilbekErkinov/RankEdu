@@ -6,12 +6,19 @@
   --bg: #f4f7ff;
   --pill: #0e1a38;
 }
-.bi {
-  font-family: "bootstrap-icons" !important;
+@font-face {
+  font-family: "bootstrap-icons";
+  src: url("/_nuxt/bootstrap-icons.mSm7cUeB.woff2") format("woff2");
   font-style: normal;
   font-weight: normal;
+  font-display: swap;
+}
+
+.bi {
+  font-family: "bootstrap-icons" !important;
   line-height: 1;
 }
+
 .bi::before {
   display: inline-block;
 }
@@ -112,7 +119,6 @@ h4 {
   color: #e9f0ff;
   text-decoration: none;
 }
-
 
 /* Text animatsiya */
 .display-title {

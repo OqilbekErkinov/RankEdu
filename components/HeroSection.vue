@@ -5,7 +5,8 @@
     class="hero position-relative overflow-hidden pb-5"
     style="padding-top: 173px"
   >
-    <svg class="herodna"
+    <svg
+      class="herodna"
       width="1440"
       height="1671"
       viewBox="0 0 1440 1671"
@@ -7508,7 +7509,7 @@
         </div>
         <div class="bubble bubble-2 d-lg-flex align-items-center gap-2">
           <span>Шифокор маслаҳатига биноан қабул...</span>
-          <img
+          <NuxtImg
             src="/images/avatar1.webp"
             alt="user"
             class="rounded-circle"
@@ -8123,11 +8124,14 @@
 
       <!-- Bitta kompozit rasm (ayol + dorilar + yozuvlar) -->
       <figure class="hero-picture mx-auto">
-        <img
+        <NuxtImg
           src="/images/hero-composite.webp"
           alt="Nevroslim hero"
           class="hero-picture__img"
           loading="eager"
+          sizes="(max-width:1024px) 100vw, 978px"
+          preload
+          fetchpriority="high"
         />
       </figure>
     </div>

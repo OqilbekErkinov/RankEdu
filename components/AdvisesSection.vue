@@ -38,6 +38,7 @@
 
             <!-- Markaziy play tugmasi (videoni boshlash uchun) -->
             <button
+              aria-label="paly video"
               v-if="playingId !== id"
               class="play-overlay btn p-0 border-0"
               type="button"
@@ -70,7 +71,7 @@
             @click="openImageFullscreen(img)"
             role="button"
           >
-            <img :src="img" alt="gallery item" />
+            <NuxtImg :src="img" alt="gallery item" />
           </div>
         </div>
       </div>

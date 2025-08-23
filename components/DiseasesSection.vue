@@ -8,7 +8,7 @@
 
         <div class="stage position-relative mx-auto">
           <!-- mahsulot -->
-          <img
+          <NuxtImg
             src="/images/pack-bottle.webp"
             alt="Nevroslim"
             class="product"

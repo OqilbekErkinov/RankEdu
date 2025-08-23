@@ -5,12 +5,13 @@
       <img src="/images/player.webp" alt="" class="w-100" />
     </div>
 
-    <h5 class="fw-semibold mb-1">{{ title }}</h5>
-    <div class="text-muted small mb-2">{{ subtitle }}</div>
+    <h1 style="font-size: 22px" class="fw-semibold mb-1">{{ title }}</h1>
+    <div class="medium mb-2">{{ subtitle }}</div>
 
     <!-- Progress -->
     <div class="progress progress-sm my-3">
       <div
+        aria-label="Audio loading"
         class="progress-bar"
         role="progressbar"
         :style="{ width: pct + '%' }"
@@ -20,6 +21,7 @@
     <!-- Controls -->
     <div class="d-flex align-items-center gap-2 my-3 justify-content-center">
       <button
+        aria-label="shuffle"
         style="border: none !important; color: #003262; background: transparent"
         class="icon-btn"
         @click="shuffle = !shuffle"
@@ -30,6 +32,7 @@
         ></i>
       </button>
       <button
+        aria-label="volume"
         style="border: none !important; color: #003262; background: transparent"
         class="icon-btn"
         @click="mute"
@@ -42,6 +45,7 @@
       </button>
 
       <button
+        aria-label="pause"
         class="btn btn-primary rounded-circle d-grid place-items-center"
         style="width: 56px; height: 56px"
         @click="toggle"
@@ -53,6 +57,7 @@
       </button>
 
       <button
+        aria-label="note"
         style="border: none !important; color: #003262; background: transparent"
         class="icon-btn"
       >
@@ -62,6 +67,7 @@
         ></i>
       </button>
       <button
+        aria-label="arrow"
         style="border: none !important; color: #003262; background: transparent"
         class="icon-btn"
         @click="loop = !loop"

@@ -170,7 +170,7 @@
                 <img src="/images/ginkgo.webp" alt="Гинкго билоба" />
               </div>
               <div class="text">
-                <h5 class="item-title">Гинкго билоба</h5>
+                <h3 class="item-title">Гинкго билоба</h3>
                 <p class="item-desc">
                   Қон айланишини яхшилайди ва қон томирларда тиқилмаларни очиб
                   беради.
@@ -324,13 +324,13 @@
           <!-- o‘ng: sahna/slider -->
           <div class="col-12 col-lg-7">
             <div class="cert-stage">
-              <img
+              <NuxtImg
                 class="doc doc-bg doc-1"
                 :src="certs[(certIndex + 1) % certs.length]"
                 alt="certificate bg"
                 draggable="false"
               />
-              <img
+              <NuxtImg
                 class="doc doc-fg doc-2"
                 :src="certs[certIndex]"
                 alt="certificate"
