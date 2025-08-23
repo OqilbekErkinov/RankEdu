@@ -13,10 +13,16 @@
 
       <!-- Top video cards (YouTube by ID) -->
       <div class="row g-4 mb-2">
-        <div class="col-lg-6" style="z-index: 100" v-for="(id, i) in videoIds" :key="'v' + i">
+        <div
+          class="col-lg-6"
+          style="z-index: 100"
+          v-for="(id, i) in videoIds"
+          :key="'v' + i"
+        >
           <div class="soft-card position-relative overflow-hidden video-card">
             <!-- Thumb -->
-            <img
+            <NuxtImg
+              loading="lazy"
               v-if="playingId !== id"
               class="w-100 h-100 object-fit-cover"
               :src="`https://img.youtube.com/vi/${id}/hqdefault.jpg`"
@@ -71,7 +77,7 @@
             @click="openImageFullscreen(img)"
             role="button"
           >
-            <NuxtImg :src="img" alt="gallery item" />
+            <NuxtImg loading="lazy" :src="img" alt="gallery item" />
           </div>
         </div>
       </div>
@@ -83,7 +89,7 @@
             <AudioMini v-for="(a, i) in audios" :key="'a' + i" :src="a" />
           </div>
         </div>
-        <div class="col-lg-5" style="z-index: 100"> 
+        <div class="col-lg-5" style="z-index: 100">
           <BigPlayer
             :src="audios?.[0]"
             :cover="cover"
@@ -126,7 +132,8 @@
           ></button>
 
           <div class="d-flex align-items-center justify-content-center h-100">
-            <img
+            <NuxtImg
+              loading="lazy"
               v-if="currentImg"
               :src="currentImg"
               class="img-fs"

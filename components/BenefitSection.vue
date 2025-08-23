@@ -1,7 +1,9 @@
 <!-- components/BenefitSection.vue -->
 <template>
   <section id="benefits" class="benefit-section position-relative py-5">
-    <svg class="benefitdna"      width="1440"
+    <svg
+      class="benefitdna"
+      width="1440"
       height="1685"
       viewBox="0 0 1440 1685"
       fill="none"
@@ -7257,7 +7259,8 @@
                 >
                   <div>
                     <div class="d-flex align-items-center gap-2">
-                      <img
+                      <NuxtImg
+                        loading="lazy"
                         :src="brandAvatar"
                         class="rounded-circle"
                         width="50"
@@ -7292,7 +7295,8 @@
 
                 <!-- cover -->
                 <div class="ratio ratio-16x9 mt-2">
-                  <img
+                  <NuxtImg
+                    loading="lazy"
                     :src="card.img"
                     class="rounded-2 object-fit-cover w-100 h-100"
                     :class="i === 1 ? 'obj-center' : ''"
@@ -7319,7 +7323,8 @@
               class="d-flex align-items-center justify-content-between px-3 pt-3"
             >
               <div class="d-flex align-items-center gap-2">
-                <img
+                <NuxtImg
+                  loading="lazy"
                   :src="brandAvatar"
                   class="rounded-circle"
                   width="50"
@@ -7341,7 +7346,8 @@
 
             <!-- image -->
             <div class="ratio ratio-1x1 mt-3">
-              <img
+              <NuxtImg
+                loading="lazy"
                 :src="post.image"
                 class="w-100 h-100 object-fit-cover"
                 alt=""
@@ -7369,7 +7375,8 @@
             <!-- comment box -->
             <div class="px-3 pb-3">
               <div class="d-flex align-items-center gap-2">
-                <img
+                <NuxtImg
+                  loading="lazy"
                   :src="userAvatar"
                   width="28"
                   height="28"

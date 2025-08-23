@@ -23,7 +23,13 @@
             :style="pillStyle('left', it.y)"
           >
             <span>{{ it.text }}</span>
-            <img v-if="it.avatar" :src="it.avatar" alt="" class="avatar ms-2" />
+            <NuxtImg
+              loading="lazy"
+              v-if="it.avatar"
+              :src="it.avatar"
+              alt=""
+              class="avatar ms-2"
+            />
           </div>
 
           <!-- RIGHT bubbles -->
@@ -33,7 +39,13 @@
             class="pill right d-flex align-items-center shadow-sm"
             :style="pillStyle('right', it.y)"
           >
-            <img v-if="it.avatar" :src="it.avatar" alt="" class="avatar me-2" />
+            <NuxtImg
+              loading="lazy"
+              v-if="it.avatar"
+              :src="it.avatar"
+              alt=""
+              class="avatar me-2"
+            />
             <span>{{ it.text }}</span>
           </div>
         </div>
@@ -248,23 +260,27 @@ onMounted(() => {
   transform: translateX(var(--dx, 0)) scale(0.98);
   will-change: transform, opacity;
 }
-.pill.left.will-reveal  { --dx: -28px; }
-.pill.right.will-reveal { --dx:  28px; }
+.pill.left.will-reveal {
+  --dx: -28px;
+}
+.pill.right.will-reveal {
+  --dx: 28px;
+}
 
 /* Ko‘ringan holat */
 .pill.in {
   opacity: 1;
   transform: translateX(0) scale(1);
-  transition: transform .55s cubic-bezier(.2,.7,.2,1), opacity .55s;
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.55s;
 }
 
 /* Harakatni kamaytirish rejimi */
 @media (prefers-reduced-motion: reduce) {
-  .pill.will-reveal, .pill.in {
+  .pill.will-reveal,
+  .pill.in {
     opacity: 1;
     transform: none;
     transition: none;
   }
 }
-
 </style>

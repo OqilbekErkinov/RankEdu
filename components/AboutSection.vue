@@ -167,7 +167,11 @@
           <div class="col-12 col-lg-6">
             <div class="extract-item reveal-left">
               <div class="thumb">
-                <img src="/images/ginkgo.webp" alt="Гинкго билоба" />
+                <NuxtImg
+                  loading="lazy"
+                  src="/images/ginkgo.webp"
+                  alt="Гинкго билоба"
+                />
               </div>
               <div class="text">
                 <h3 class="item-title">Гинкго билоба</h3>
@@ -180,7 +184,11 @@
 
             <div class="extract-item reveal-left">
               <div class="thumb">
-                <img src="/images/blackroot.webp" alt="Қора андиз" />
+                <NuxtImg
+                  loading="lazy"
+                  src="/images/blackroot.webp"
+                  alt="Қора андиз"
+                />
               </div>
               <div class="text">
                 <h5 class="item-title">Қора андиз</h5>
@@ -192,7 +200,7 @@
 
             <div class="extract-item mb-0 reveal-left">
               <div class="thumb">
-                <img src="/images/mumie.webp" alt="Мумийё" />
+                <NuxtImg loading="lazy" src="/images/mumie.webp" alt="Мумийё" />
               </div>
               <div class="text">
                 <h5 class="item-title">Мумийё</h5>
@@ -207,7 +215,11 @@
           <div class="col-12 col-lg-6">
             <div class="extract-item reveal-right">
               <div class="thumb">
-                <img src="/images/valeriana.webp" alt="Валериана" />
+                <NuxtImg
+                  loading="lazy"
+                  src="/images/valeriana.webp"
+                  alt="Валериана"
+                />
               </div>
               <div class="text">
                 <h5 class="item-title">Валериана</h5>
@@ -220,7 +232,11 @@
 
             <div class="extract-item reveal-right">
               <div class="thumb">
-                <img src="/images/ginger.webp" alt="Занжабил" />
+                <NuxtImg
+                  loading="lazy"
+                  src="/images/ginger.webp"
+                  alt="Занжабил"
+                />
               </div>
               <div class="text">
                 <h5 class="item-title">Занжабил</h5>
@@ -233,7 +249,11 @@
 
             <div class="extract-item mb-0 reveal-right">
               <div class="thumb">
-                <img src="/images/cinnamon.webp" alt="Долчин" />
+                <NuxtImg
+                  loading="lazy"
+                  src="/images/cinnamon.webp"
+                  alt="Долчин"
+                />
               </div>
               <div class="text">
                 <h5 class="item-title">Долчин</h5>
@@ -325,12 +345,14 @@
           <div class="col-12 col-lg-7">
             <div class="cert-stage">
               <NuxtImg
+                loading="lazy"
                 class="doc doc-bg doc-1"
                 :src="certs[(certIndex + 1) % certs.length]"
                 alt="certificate bg"
                 draggable="false"
               />
               <NuxtImg
+                loading="lazy"
                 class="doc doc-fg doc-2"
                 :src="certs[certIndex]"
                 alt="certificate"
@@ -442,7 +464,8 @@
           <div class="zoom-dialog" @click.stop>
             <div class="zoom-stage">
               <!-- orqa fon (bg) -->
-              <img
+              <NuxtImg
+                loading="lazy"
                 :src="certs[(certIndex + 1) % certs.length]"
                 class="zoom-doc zoom-bg"
                 alt="certificate bg"
@@ -450,7 +473,8 @@
               />
 
               <!-- oldingi (fg) -->
-              <img
+              <NuxtImg
+                loading="lazy"
                 :src="certs[certIndex]"
                 class="zoom-doc zoom-fg"
                 :key="certIndex"
@@ -659,11 +683,12 @@ onMounted(() => {
   padding: 10px 8px;
 }
 
-.aboutdna, .aboutdna2 {
+.aboutdna,
+.aboutdna2 {
   position: absolute;
 }
 .aboutdna {
-  margin-top: -3rem
+  margin-top: -3rem;
 }
 .aboutdna2 {
   margin-top: -6rem;
@@ -900,7 +925,7 @@ onMounted(() => {
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.6);
 }
 .zoom-bg {
-  transform: translateX(50%) ;
+  transform: translateX(50%);
 }
 .zoom-fg {
   transform: translateX(-50%);

@@ -2,7 +2,7 @@
   <div class="soft-card p-4 big-player" style="z-index: 104">
     <!-- Cover -->
     <div class="big-cover mb-3">
-      <img src="/images/player.webp" alt="" class="w-100" />
+      <NuxtImg loading="lazy" src="/images/player.webp" alt="" class="w-100" />
     </div>
 
     <h1 style="font-size: 22px" class="fw-semibold mb-1">{{ title }}</h1>

@@ -1,16 +1,21 @@
 <template>
-  <div class="audio-mini d-flex align-items-center gap-3 p-2 soft-card" style="z-index: 100">
+  <div
+    class="audio-mini d-flex align-items-center gap-3 p-2 soft-card"
+    style="z-index: 100"
+  >
     <!-- Play/Pause -->
-    <button aria-label="pause"
+    <button
       class="btn rounded-circle p-0 d-grid place-items-center"
       style="width: 36px; height: 36px"
+      :aria-label="isPlaying ? 'Pause audio' : 'Play audio'"
       @click="toggle"
     >
       <i
         style="margin-top: 6px; color: #003262"
         :class="isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'"
-      ></i>
+      />
     </button>
+
     <span style="color: #003262" class="me-2 voise-time"
       >{{ currentTime }}/{{ duration }}</span
     >
@@ -20,17 +25,20 @@
       <div class="d-flex"></div>
       <div class="progress progress-sm mt-1">
         <div
-        aria-label="Audio loading progress"
-          style="--bs-progress-bg: #74afff"
           class="progress-bar"
           role="progressbar"
+          aria-label="Audio loading progress"
           :style="{ width: pct + '%' }"
-        ></div>
+        />
       </div>
     </div>
 
     <!-- Volume -->
-    <button aria-label="dots" class="btn btn-link text-muted p-0" @click="mute">
+    <button
+      aria-label="Mute/unmute"
+      class="btn btn-link text-muted p-0"
+      @click="mute"
+    >
       <i
         style="color: #003262"
         :class="muted ? 'bi bi-volume-mute' : 'bi bi-volume-up'"
@@ -38,26 +46,35 @@
       <i style="color: #003262" class="bi bi-three-dots-vertical"></i>
     </button>
 
+    <!-- ⚡️ audio: src VQ ichida faqat Play bosilganda qo‘yiladi -->
     <audio
       ref="audio"
-      :src="src"
+      preload="none"
       @timeupdate="onTick"
+      @loadedmetadata="onLoaded"
       @ended="isPlaying = false"
-    ></audio>
+    >
+      <source v-if="canLoad" :src="src" type="audio/mpeg" />
+    </audio>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, nextTick } from "vue";
 
 const props = defineProps<{ src: string }>();
+
 const audio = ref<HTMLAudioElement | null>(null);
 const isPlaying = ref(false);
 const muted = ref(false);
 const pct = ref(0);
 
+// 🔑 faqat Play bosilganda source qo'yilishi uchun flag
+const canLoad = ref(false);
+
 const currentTime = computed(() => format(audio.value?.currentTime || 0));
-const duration = computed(() => format(audio.value?.duration || 0));
+const _duration = ref(0);
+const duration = computed(() => format(_duration.value || 0));
 
 function format(s: number) {
   const m = Math.floor(s / 60).toString();
@@ -67,11 +84,35 @@ function format(s: number) {
   return `${m}:${ss}`;
 }
 
-function toggle() {
+async function toggle() {
   if (!audio.value) return;
-  if (isPlaying.value) audio.value.pause();
-  else audio.value.play();
-  isPlaying.value = !isPlaying.value;
+
+  // Birinchi marta: source'ni ulab, keyin o'ynatamiz
+  if (!canLoad.value) {
+    canLoad.value = true; // <source> DOMga kirdi
+    await nextTick(); // audio ichida <source> paydo bo'ldi
+    try {
+      await audio.value!.play();
+      isPlaying.value = true;
+    } catch (e) {
+      // autoplay policy yoki boshqalar – foydalanuvchi takror bosadi
+      isPlaying.value = false;
+    }
+    return;
+  }
+
+  // Keyingi bosishlarda oddiy play/pause
+  if (isPlaying.value) {
+    audio.value.pause();
+    isPlaying.value = false;
+  } else {
+    try {
+      await audio.value.play();
+      isPlaying.value = true;
+    } catch {
+      isPlaying.value = false;
+    }
+  }
 }
 
 function mute() {
@@ -84,7 +125,13 @@ function onTick() {
   if (!audio.value || !audio.value.duration) return;
   pct.value = (audio.value.currentTime / audio.value.duration) * 100;
 }
+
+function onLoaded() {
+  if (!audio.value) return;
+  _duration.value = isFinite(audio.value.duration) ? audio.value.duration : 0;
+}
 </script>
+
 <style>
 .progress {
   --bs-progress-bg: #74afff;
