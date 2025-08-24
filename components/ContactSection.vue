@@ -41,7 +41,7 @@
             </div>
           </div>
 
-          <!-- form -->
+          <!-- lead text + form -->
           <div class="col-lg-4">
             <p
               class="mb-5 timer-text"
@@ -56,13 +56,14 @@
               ва яқинларингиз соғлигига бефарқ бўлманг
             </p>
           </div>
+
           <div class="col-lg-4">
             <div class="soft-inner p-3 rounded-3">
               <div class="mb-4">
                 <input
                   type="text"
                   class="form-control"
-                  placeholder="Исмиңиз"
+                  placeholder="Исмингиз"
                   v-model="form.name"
                   style="color: #003262 !important; border: 1px solid #b3c8d8"
                 />
@@ -95,24 +96,30 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, reactive, ref } from "vue";
 
-/* ===== COUNTDOWN: 2 soat per-session ===== */
-const SESSION_KEY = "nevro_countdown_deadline"; // sessionStorage kaliti
-const TWO_HOURS_MS = 2 * 60 * 60 * 1000;
+/* ===== COUNTDOWN: Random 1h–2h per session ===== */
+const SESSION_KEY_DEADLINE = "nevro_countdown_deadline_v2";
+const MIN_MS = 1 * 60 * 60 * 1000; // 1 soat
+const MAX_MS = 2 * 60 * 60 * 1000; // 2 soat
 
 const left = reactive({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 const deadlineMs = ref<number>(0);
-let t: number | undefined;
+let intervalId: number | undefined;
+
+function randomDurationMs() {
+  // [1h .. 2h] diapazonda tasodifiy
+  return Math.floor(MIN_MS + Math.random() * (MAX_MS - MIN_MS));
+}
 
 /** Sessiya uchun deadline’ni o‘rnatish yoki sessionStorage’dan olish */
 function initDeadline() {
   const now = Date.now();
-  const saved = sessionStorage.getItem(SESSION_KEY);
+  const saved = sessionStorage.getItem(SESSION_KEY_DEADLINE);
   const parsed = saved ? parseInt(saved, 10) : NaN;
 
   if (!Number.isFinite(parsed) || parsed <= now) {
-    // Yangi sessiya yoki avvalgi deadline tugagan → 2 soatdan boshlab beramiz
-    deadlineMs.value = now + TWO_HOURS_MS;
-    sessionStorage.setItem(SESSION_KEY, String(deadlineMs.value));
+    // Yangi sessiya yoki tugagan — 1..2 soatdan random beramiz
+    deadlineMs.value = now + randomDurationMs();
+    sessionStorage.setItem(SESSION_KEY_DEADLINE, String(deadlineMs.value));
   } else {
     deadlineMs.value = parsed;
   }
@@ -124,9 +131,9 @@ function tick() {
   let diff = deadlineMs.value - now;
 
   if (diff <= 0) {
-    // Shu sessiyada ham nolga yetganda — yana 2 soatga qayta o‘rnatamiz
-    deadlineMs.value = now + TWO_HOURS_MS;
-    sessionStorage.setItem(SESSION_KEY, String(deadlineMs.value));
+    // Nolga yetganda yana 1..2 soat random bilan qayta start
+    deadlineMs.value = now + randomDurationMs();
+    sessionStorage.setItem(SESSION_KEY_DEADLINE, String(deadlineMs.value));
     diff = deadlineMs.value - now;
   }
 
@@ -143,20 +150,20 @@ function padLeft(n: number) {
 onMounted(() => {
   initDeadline();
   tick();
-  t = window.setInterval(tick, 1000);
+  intervalId = window.setInterval(tick, 1000);
 });
 
 onBeforeUnmount(() => {
-  if (t) window.clearInterval(t);
+  if (intervalId) window.clearInterval(intervalId);
 });
 
-/* ===== FORM (o'zingizniki qolgani kabi) ===== */
+/* ===== FORM (demo) ===== */
 const form = reactive({ name: "", phone: "" });
 function submit() {
   alert(`Qabul qilindi:\nIsm: ${form.name}\nTelefon: ${form.phone}`);
 }
 
-/* Mock participants (kerak bo‘lsa ishlatasiz) */
+/* (ixtiyoriy) Mock participants */
 const participants = [
   { name: "Cassie Jung", img: "/images/call1.webp", muted: true },
   { name: "Alice Wong", img: "/images/call2.webp", muted: false },
@@ -166,7 +173,6 @@ const participants = [
 </script>
 
 <style scoped>
-/* ---- Design tokens (faqat shu komponent ichida ishlatiladi) ---- */
 :host {
   --c-primary: #0000ff;
   --c-text: #01101e;

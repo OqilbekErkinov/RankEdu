@@ -2,7 +2,7 @@
   <div ref="preloader" class="mil-preloader">
     <div ref="animation" class="mil-preloader-animation">
       <div ref="animation1" class="mil-pos-abs mil-animation-1">
-        <p class="mil-h3 mil-muted mil-thin mt-5">Доверие</p>
+        <p class="mil-h3 mil-muted mil-thin mt-5">Доверие</p>x
         <p class="mil-h3 mil-muted mt-5">Скорость11</p>
         <p class="mil-h3 mil-muted mil-thin mt-5">Качество</p>
       </div>

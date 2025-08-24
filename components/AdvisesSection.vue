@@ -175,7 +175,7 @@ const props = withDefaults(defineProps<Props>(), {
       () => "https://www2.cs.uic.edu/~i101/SoundFiles/StarWars60.wav"
     ),
   cover: "https://picsum.photos/900/700?random=31",
-  playerTitle: "Оvozли Натижалар",
+  playerTitle: "Овозли Hатижалар",
   playerSubtitle: "Nevroslim",
 });
 
