@@ -33,11 +33,9 @@
         >
       </h2>
 
-      <!-- horizontal carousel -->
       <div ref="scroller" class="scroller" @scroll="onScroll">
         <div v-for="id in videoIds" :key="id" class="card-phone">
           <div class="screen ratio-9x16" @click="playInline(id)">
-            <!-- thumbnail -->
             <div
               v-if="playingId !== id"
               class="thumb"
@@ -45,7 +43,6 @@
                 backgroundImage: `url(https://img.youtube.com/vi/${id}/hqdefault.jpg)`,
               }"
             />
-            <!-- inline iframe (cover) -->
             <iframe
               v-else
               :id="`player-${id}`"
@@ -56,7 +53,6 @@
               allowfullscreen
             />
 
-            <!-- center play (minimal, light) -->
             <button
               v-if="playingId !== id"
               class="play play-minimal"
@@ -79,7 +75,6 @@
               </svg>
             </button>
 
-            <!-- overlay controls (show only when playing) -->
             <div v-if="playingId === id" class="overlay-controls">
               <button
                 class="ctrl"
@@ -107,7 +102,6 @@
         </div>
       </div>
 
-      <!-- bottom controls -->
       <div class="pager-wrap">
         <button class="nav-dot" @click="scrollByCard(-1)" aria-label="Prev">
           <span class="chev">‹</span>
@@ -131,7 +125,6 @@
       </div>
     </div>
 
-    <!-- Fallback: fullscreen modal -->
     <div
       class="modal fade"
       id="expertVideoModal"
@@ -171,7 +164,6 @@ const videoIds = ref<string[]>([
   "ZbSPn_FnPyI",
 ]);
 
-/* --- inline play --- */
 const playingId = ref<string | null>(null);
 const inlineUrl = (id: string) =>
   `https://www.youtube.com/embed/${id}?autoplay=1&mute=0&playsinline=1&controls=0&modestbranding=1&rel=0`;
@@ -183,11 +175,9 @@ const togglePlay = (id: string) => {
   playingId.value = playingId.value === id ? null : id;
 };
 
-/* --- Shorts --- */
 const openShorts = (id: string) =>
   window.open(`https://www.youtube.com/shorts/${id}`, "_blank");
 
-/* --- fullscreen + modal fallback --- */
 const currentId = ref<string | null>(null);
 const modalUrl = computed(() =>
   currentId.value
@@ -208,7 +198,6 @@ const goFullscreen = async (id: string) => {
   }
   currentId.value = id;
   const el = document.getElementById("expertVideoModal")!;
-  // @ts-ignore
   const BS = (window as any).bootstrap;
   if (BS?.Modal) {
     const modal = BS.Modal.getOrCreateInstance(el);
@@ -235,13 +224,12 @@ const goFullscreen = async (id: string) => {
   }
 };
 
-/* --- Carousel scroll by one card --- */
 const scroller = ref<HTMLDivElement | null>(null);
 const getCardWidth = () => {
   const el = scroller.value?.querySelector<HTMLElement>(".card-phone");
   if (!el) return 0;
   const w = el.getBoundingClientRect().width;
-  const gap = 24; // .scroller gap
+  const gap = 24;
   return w + gap;
 };
 const scrollByCard = (dir: 1 | -1) => {
@@ -250,10 +238,9 @@ const scrollByCard = (dir: 1 | -1) => {
   el.scrollBy({ left: getCardWidth() * dir, behavior: "smooth" });
 };
 
-/* --- Pager (progress pill) --- */
-const progress = ref(0); // 0..1
-const thumbWidth = ref(25); // %
-const thumbLeft = ref(0); // %
+const progress = ref(0); 
+const thumbWidth = ref(25);
+const thumbLeft = ref(0);
 const onScroll = () => {
   const el = scroller.value;
   if (!el) return;
@@ -273,206 +260,3 @@ onBeforeUnmount(() => {
   window.removeEventListener("resize", onScroll);
 });
 </script>
-
-<style scoped>
-:root {
-  --ink: #0a2a5c;
-  --brand: #1b5cff;
-  --frame: #eaf1ff;
-  --panel: #f6f9ff;
-}
-
-/* title */
-.title {
-  color: var(--ink);
-  font-weight: 600;
-  line-height: 1.25;
-  font-size: 40px;
-  margin: auto;
-}
-@media (max-width: 600px) {
-  .title {
-    font-size: 24px;
-  }
-}
-
-/* carousel */
-.scroller {
-  display: flex;
-  gap: 24px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding: 8px 6px 18px; /* biroz pastga joy qoldirdik */
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-.scroller::-webkit-scrollbar {
-  display: none;
-}
-
-.card-phone {
-  flex: 0 0 auto;
-  width: clamp(240px, 22vw, 320px);
-  position: relative;
-  scroll-snap-align: start;
-  transition: transform 0.25s ease;
-  z-index: 10;
-}
-
-/* ✅ Stagger: yonlari past, o'rtadagilari tepada (4 ta blok ritmida) */
-@media (min-width: 680px) {
-  /* 1-chi va 4-chi (yonlar) pastroqda */
-  .card-phone:nth-child(4n + 1),
-  .card-phone:nth-child(4n + 4) {
-    transform: translateY(20px);
-  }
-  /* 2-chi va 3-chi (o'rtadagi) teparoqda */
-  .card-phone:nth-child(4n + 2),
-  .card-phone:nth-child(4n + 3) {
-    transform: translateY(-11px);
-  }
-}
-/* Kichik ekranlarda tekis ko'rinish */
-@media (max-width: 679px) {
-  .card-phone {
-    transform: none !important;
-  }
-}
-
-/* screen/card — light style */
-.screen {
-  position: relative;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 5px solid #fff;
-  box-shadow: 0 10px 24px rgba(16, 38, 94, 0.1), inset 0 0 0 1px var(--frame);
-  background: var(--panel);
-}
-
-.thumb {
-  width: 100%;
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  filter: saturate(0.96);
-}
-
-/* 9:16 container */
-.ratio-9x16 {
-  aspect-ratio: 9 / 16;
-}
-
-/* iframe sizing to cover 9:16 mask with 16:9 player */
-.embed-cover {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  height: 100%;
-  width: 177.78%;
-  transform: translate(-50%, -50%);
-  border: 0;
-}
-
-/* minimal center play */
-.play {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-.play-minimal svg {
-  display: block;
-}
-
-/* overlay controls (only when playing) */
-.overlay-controls {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 8px;
-  display: flex;
-  gap: 8px;
-  justify-content: space-between;
-  padding: 6px 8px;
-}
-.ctrl {
-  appearance: none;
-  border: 0;
-  background: rgba(255, 255, 255, 0.95);
-  color: #0a2a5c;
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-}
-
-/* bottom pager (prev | pill | next) */
-.pager-wrap {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-}
-.nav-dot {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 2px solid #5d8aa8;
-  background: transparent;
-  color: #5d8aa8;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  padding-bottom: 4px;
-  font-weight: 800;
-}
-.nav-dot:hover {
-  background: #f7fbff;
-}
-.chev {
-  font-size: 18px;
-  line-height: 1;
-  padding-bottom: 2px;
-}
-
-.pill-track {
-  position: relative;
-  width: clamp(80px, 14vw, 120px);
-  height: 10px;
-  border-radius: 999px;
-  background: transparent;
-  overflow: hidden;
-  border: none;
-}
-.pill-thumb {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  border-radius: 999px;
-  background: #5d8aa8;
-  opacity: 0.7;
-  transition: left 0.25s ease, width 0.25s ease;
-  border: none;
-}
-
-/* old side arrows hidden */
-.side-arrow {
-  display: none;
-}
-
-/* modal */
-.modal-content,
-.bg-black {
-  background: #000;
-}
-.expertdna {
-  position: absolute;
-  margin-top: -4rem;
-}
-
-</style>

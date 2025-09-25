@@ -1,6 +1,5 @@
 <template>
   <div class="soft-card p-4 big-player" style="z-index: 104">
-    <!-- Cover -->
     <div class="big-cover mb-3">
       <NuxtImg loading="lazy" src="/images/player.webp" alt="" class="w-100" />
     </div>
@@ -8,7 +7,6 @@
     <h1 style="font-size: 22px" class="fw-semibold mb-1">{{ title }}</h1>
     <div class="medium mb-2">{{ subtitle }}</div>
 
-    <!-- Progress -->
     <div class="progress progress-sm my-3">
       <div
         aria-label="Audio loading"
@@ -18,7 +16,6 @@
       ></div>
     </div>
 
-    <!-- Controls -->
     <div class="d-flex align-items-center gap-2 my-3 justify-content-center">
       <button
         aria-label="shuffle"
@@ -124,25 +121,3 @@ function onTick() {
   pct.value = (audio.value.currentTime / audio.value.duration) * 100;
 }
 </script>
-<style scoped>
-.bi {
-  font-size: 30px !important;
-  margin-left: 2.4rem;
-  margin-right: 2.4rem;
-}
-@media (max-width: 600px) {
-  .bi {
-    font-size: 24px !important;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  .bi-volume-up {
-    margin-left: 1rem !important;
-    margin-right: 1rem !important;
-  }
-  .bi-music-note-beamed {
-    margin-left: 1rem !important;
-    margin-right: 1rem !important;
-  }
-}
-</style>

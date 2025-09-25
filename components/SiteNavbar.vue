@@ -3,7 +3,6 @@
     class="navbar navbar-expand-lg sticky-top nav-shadow navbar-light app-navbar"
   >
     <div class="container py-2">
-      <!-- Logo + Sale badge -->
       <NuxtLink
         class="navbar-brand nav-logo d-flex align-items-center gap-2"
         to="/"
@@ -13,7 +12,6 @@
 
       <span class="badge-sale d-none d-md-inline">-50%</span>
 
-      <!-- Toggler (custom) -->
       <button
         class="btn nav-toggle p-0 ms-auto d-lg-none"
         :aria-expanded="isOpen ? 'true' : 'false'"
@@ -21,7 +19,6 @@
         aria-label="Toggle navigation"
         @click="toggle"
       >
-        <!-- hamburger -->
         <svg
           v-if="!isOpen"
           width="26"
@@ -38,7 +35,6 @@
             stroke-linecap="round"
           />
         </svg>
-        <!-- X (close) -->
         <svg
           v-else
           width="26"
@@ -57,7 +53,6 @@
         </svg>
       </button>
 
-      <!-- Desktop nav -->
       <div class="collapse navbar-collapse d-none d-lg-flex">
         <ul class="navbar-nav m-auto mb-0">
           <li class="nav-item">
@@ -100,9 +95,7 @@
       </div>
     </div>
 
-    <!-- ======== Mobile overlay + sheet menu ======== -->
     <Teleport to="body">
-      <!-- Backdrop -->
       <transition name="fade">
         <div
           v-if="isOpen"
@@ -112,7 +105,6 @@
         />
       </transition>
 
-      <!-- Sheet -->
       <transition name="slide-down">
         <div
           v-if="isOpen"
@@ -194,7 +186,6 @@ function toggle() {
   isOpen.value ? close() : open();
 }
 
-// ESC bilan yopish
 function onKey(e: KeyboardEvent) {
   if (e.key === "Escape" && isOpen.value) close();
 }
@@ -205,133 +196,8 @@ onBeforeUnmount(() => {
   document.body.style.overflow = "";
 });
 
-// Route o‘zgarsa (anchor yoki sahifa) menyuni yopamiz
 watch(
   () => route.fullPath,
   () => close()
 );
 </script>
-
-<style scoped>
-.app-navbar {
-  /* padding-top: 2rem; */
-}
-
-.navbar-brand img {
-  display: block;
-}
-
-.badge-sale {
-  background: #0b5fff;
-  color: #fff;
-  border-radius: 999px;
-  font-weight: 600;
-  padding: 0.35rem 0.65rem;
-  margin-left: 0.5rem;
-}
-
-.nav-link {
-  color: #003262;
-  font-weight: 500;
-  padding: 0.5rem 0.9rem !important;
-}
-.nav-link:hover {
-  color: #00578d;
-}
-
-/* Brand button */
-.btn-brand {
-  background: #003262;
-  color: #FDFEFF;
-  border-radius: 12px;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid #003262;
-  box-shadow: 0 6px 16px rgba(11, 95, 255, 0.25);
-}
-.btn-brand:hover {
-  filter: brightness(1.03);
-}
-
-@media (max-width: 600px) {
-  .btn-brand {
-  padding: 0.6rem 0rem;
-  }
-}
-
-/* Toggler */
-.nav-toggle .icon {
-  display: block;
-}
-.nav-toggle {
-  background: transparent;
-}
-
-/* ===== Backdrop + Sheet (mobile) ===== */
-.nav-backdrop {
-  position: fixed;
-  top: 78px;
-  margin-top: 5rem;
-  inset: 0;
-  background: rgba(2, 20, 46, 0.45);
-  backdrop-filter: blur(1px);
-  z-index: 1040;
-}
-
-/* menyu kartochkasi */
-.mobile-sheet {
-  position: fixed;
-  z-index: 1050;
-  left: 68%;
-  top: 78px; /* navbar pastida */
-  transform: translateX(-50%);
-  width: calc(100% - 32px);
-  max-width: 250px;
-  background: #F4F7FF;
-  /* border-radius: 22px; */
-  border-top-left-radius: 18px;
-  border-bottom-left-radius: 18px;
-  padding: 18px;
-  color: #003262;
-}
-
-.sheet-link {
-  display: block;
-  padding: 12px 10px;
-  color: #003262;
-  font-weight: 500;
-  border-radius: 10px;
-  text-decoration: none;
-}
-.sheet-link:hover {
-  background: #eef4ff;
-  color: #0000FF;
-}
-
-/* Animations */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.18s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.slide-down-enter-active,
-.slide-down-leave-active {
-  transition: transform 0.22s cubic-bezier(0.22, 0.9, 0.24, 1),
-    opacity 0.22s ease;
-}
-.slide-down-enter-from,
-.slide-down-leave-to {
-  transform: translate(-50%, -8px);
-  opacity: 0;
-}
-
-/* Desktop tweaks */
-@media (min-width: 992px) {
-  .nav-toggle {
-    display: none;
-  }
-}
-</style>

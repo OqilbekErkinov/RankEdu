@@ -12,7 +12,17 @@ export default defineNuxtConfig({
   css: [
     'bootstrap/dist/css/bootstrap.min.css',
     'bootstrap-icons/font/bootstrap-icons.css', 
-    '@/assets/css/main.css'
+    '@/assets/css/main.css',
+    '@/assets/css/header.css',
+    '@/assets/css/footer.css',
+    '@/assets/css/hero.css',
+    '@/assets/css/about.css',
+    '@/assets/css/advise.css',
+    '@/assets/css/benefit.css',
+    '@/assets/css/bigplayer.css',
+    '@/assets/css/contact.css',
+    '@/assets/css/diseases.css',
+    '@/assets/css/expert.css',
   ],
 
   plugins: [
@@ -20,19 +30,16 @@ export default defineNuxtConfig({
   ],
 
   runtimeConfig: {
-    telegramBotToken: '',   // .env ichidan keladi
-    telegramChatId: '',     // .env ichidan keladi
     public: {
       siteName: 'Nevroslim'
     }
   },
   modules: ['@nuxt/image'],
   image: {
-    format: ['avif', 'webp'], // brauzer qaysi formatni qo‘llasa, o‘shani beradi
-    quality: 60,              // umumiy sifat (keyin komponentda override qilsa bo‘ladi)
+    format: ['avif', 'webp'],
+    quality: 60, 
     screens: { sm: 640, md: 768, lg: 1024, xl: 1280 }
   },
-  // (ixtiyoriy) IPX keshini kuchli qilish
   routeRules: {
     '/_ipx/**': { headers: { 'cache-control': 'public, max-age=31536000, immutable' } }
   },

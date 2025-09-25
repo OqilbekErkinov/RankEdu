@@ -5,6 +5,6 @@
       <slot />
     </main>
     <SiteFooter />
-    <OrderModal /> <!-- Har doim mavjud, headerdan ham ochiladi -->
+    <OrderModal />
   </div>
 </template>

@@ -1,13 +1,11 @@
 <template>
   <div>
     <NuxtLayout>
-      <!-- <LoadingText /> -->
-  <NuxtLoadingIndicator />
+      <NuxtLoadingIndicator />
       <NuxtPage />
     </NuxtLayout>
   </div>
 </template>
-
 
 <style>
 .page-enter-active,

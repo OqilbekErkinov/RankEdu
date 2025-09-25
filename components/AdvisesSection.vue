@@ -2,7 +2,6 @@
 <template>
   <section id="results" class="advises pb-5">
     <div class="classformargin">
-      <!-- Title -->
       <div class="text-center mb-4 mb-lg-5">
         <h1 class="display-title section-title">
           <span class="duo"
@@ -11,7 +10,6 @@
         </h1>
       </div>
 
-      <!-- Top video cards (YouTube by ID) -->
       <div class="row g-4 mb-2">
         <div
           class="col-lg-6"
@@ -20,7 +18,6 @@
           :key="'v' + i"
         >
           <div class="soft-card position-relative overflow-hidden video-card">
-            <!-- Thumb -->
             <NuxtImg
               loading="lazy"
               v-if="playingId !== id"
@@ -30,7 +27,6 @@
               @click="playInline(id)"
             />
 
-            <!-- Inline iframe (YouTube controls ON) -->
             <div v-else class="ratio ratio-16x9">
               <iframe
                 :id="`adv-player-${id}`"
@@ -42,7 +38,6 @@
               />
             </div>
 
-            <!-- Markaziy play tugmasi (videoni boshlash uchun) -->
             <button
               aria-label="paly video"
               v-if="playingId !== id"
@@ -65,7 +60,6 @@
         </div>
       </div>
 
-      <!-- 4 thumbs gallery -->
       <div class="row g-4 mb-5 gallery">
         <div
           v-for="(img, i) in gallery4"
@@ -82,7 +76,6 @@
         </div>
       </div>
 
-      <!-- Audio list + Big player -->
       <div class="row g-4 align-items-start">
         <div class="col-lg-7" style="z-index: 100">
           <div class="d-flex flex-column" style="gap: 2.4rem">
@@ -100,7 +93,6 @@
       </div>
     </div>
 
-    <!-- (Video) Fallback fullscreen modal — hozircha ishlatilmaydi, lekin qoldirdik -->
     <div class="modal fade" id="advVideoModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content border-0 bg-black">
@@ -118,7 +110,6 @@
       </div>
     </div>
 
-    <!-- Image fullscreen modal -->
     <div class="modal fade" id="imgFullscreen" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content border-0 bg-black">
@@ -152,7 +143,6 @@ import AudioMini from "@/components/AudioMini.vue";
 import BigPlayer from "@/components/BigPlayer.vue";
 
 type Props = {
-  /** YouTube video IDs for the top two cards */
   videoIds?: string[];
   gallery4?: string[];
   audios?: string[];
@@ -179,10 +169,8 @@ const props = withDefaults(defineProps<Props>(), {
   playerSubtitle: "Nevroslim",
 });
 
-/* ---- Video boshqaruvlari ---- */
 const playingId = ref<string | null>(null);
 
-/* YouTube inline URL: controls=1 → YouTube ikonkalari ko‘rinadi */
 const inlineUrl = (id: string) =>
   `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&controls=1&modestbranding=1&rel=0&fs=1&enablejsapi=1&origin=${location.origin}`;
 
@@ -190,7 +178,6 @@ const playInline = (id: string) => {
   playingId.value = id;
 };
 
-/* Fullscreen (true fullscreen → modal fallback) — qoldirilgan */
 const currentId = ref<string | null>(null);
 const modalUrl = computed(() =>
   currentId.value
@@ -198,7 +185,6 @@ const modalUrl = computed(() =>
     : ""
 );
 
-/* ---- Image fullscreen ---- */
 const currentImg = ref<string | null>(null);
 
 const escClose = (e: KeyboardEvent) => {
@@ -207,7 +193,6 @@ const escClose = (e: KeyboardEvent) => {
 
 const closeImageFullscreen = () => {
   const el = document.getElementById("imgFullscreen")!;
-  // @ts-ignore
   const BS = (window as any).bootstrap;
   if (BS?.Modal) {
     const inst = BS.Modal.getInstance(el) || BS.Modal.getOrCreateInstance(el);
@@ -224,7 +209,6 @@ const closeImageFullscreen = () => {
 const openImageFullscreen = (src: string) => {
   currentImg.value = src;
   const el = document.getElementById("imgFullscreen")!;
-  // @ts-ignore
   const BS = (window as any).bootstrap;
 
   if (BS?.Modal) {
@@ -239,7 +223,6 @@ const openImageFullscreen = (src: string) => {
       { once: true }
     );
   } else {
-    // Fallback
     el.classList.add("show");
     el.style.display = "block";
     el.removeAttribute("aria-hidden");
@@ -250,105 +233,6 @@ const openImageFullscreen = (src: string) => {
     el.addEventListener("click", backdropClose, { once: true });
   }
 
-  // ESC bilan yopish
   document.addEventListener("keydown", escClose);
 };
 </script>
-
-<style scoped>
-.section-title {
-  font-weight: 500;
-  font-size: 40px;
-  letter-spacing: 0.5px;
-  margin: auto;
-}
-.accent {
-  color: #0000ff;
-}
-
-.video-card {
-  min-height: 477px; /* konteyner balandligi (thumb/iframe) */
-  margin-bottom: 2rem;
-}
-
-/* YouTube iframe to‘liq ko‘rinsin, ichida o‘z controls chiqadi */
-.yt-iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-/* Markaziy play overlay */
-.play-overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: transparent;
-}
-.play-btn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: transparent;
-  display: grid;
-  place-items: center;
-  border: none;
-}
-
-/* Cardlar */
-.soft-card {
-  background: #e8efff;
-  border-radius: 24px;
-}
-
-.thumb {
-  background: #eef3ff;
-  border-radius: 18px;
-  border: 1px solid #e6ecf5;
-  overflow: hidden;
-  cursor: pointer;
-}
-.thumb img {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-}
-
-/* Fullscreen image styling */
-.img-fs {
-  max-width: 100%;
-  max-height: 100vh;
-  object-fit: contain;
-}
-/* Modal kontent nisbiy bo‘lsin — tugma joylashishi uchun */
-#imgFullscreen .modal-content {
-  position: relative;
-}
-
-/* Close button (oq x) */
-.fs-close {
-  position: absolute;
-  top: 12px;
-  right: 7rem;
-  z-index: 2;
-  filter: invert(1); /* qorong‘i fon ustida oq bo‘lib ko‘rinsin */
-}
-
-@media (min-width: 992px) {
-  .gallery .thumb img {
-    height: 200px;
-  }
-}
-@media (max-width: 600px) {
-  .section-title {
-    font-size: 24px;
-  }
-  .video-card {
-    min-height: 250px !important;
-  }
-}
-.ratio-16x9 {
-  --bs-aspect-ratio: 75%;
-}
-</style>

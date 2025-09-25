@@ -2,10 +2,8 @@
 <template>
   <footer class="site-footer py-5">
     <div class="classformargin">
-      <!-- top hairline -->
       <hr class="footer-line mb-4" />
 
-      <!-- brand -->
       <div class="text-center mb-3">
         <NuxtLink
           to="/"
@@ -15,7 +13,6 @@
         </NuxtLink>
       </div>
 
-      <!-- nav -->
       <nav class="text-center">
         <ul class="list-inline m-0 footer-nav">
           <li
@@ -46,40 +43,3 @@ const props = withDefaults(defineProps<{ items?: Item[] }>(), {
   ],
 });
 </script>
-
-<style scoped>
-.site-footer {
-}
-
-.footer-line {
-  height: 2px;
-  background: #ffffff;
-  opacity: 0.8;
-  border: 0;
-}
-
-.logo-text {
-  font-weight: 800;
-  letter-spacing: 2px;
-  color: #5e8caf; /* brend ko‘k */
-  font-size: clamp(20px, 3vw, 32px);
-}
-
-.footer-link {
-  color: #0f2945;
-  font-weight: 600;
-  text-decoration: none;
-}
-.footer-link:hover {
-  color: #1f4f86;
-  text-decoration: underline;
-}
-@media (max-width: 600px) {
-  .footer-nav {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-}
-</style>

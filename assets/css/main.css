@@ -5,6 +5,11 @@
   --muted: #5b6b8b;
   --bg: #f4f7ff;
   --pill: #0e1a38;
+  --frame: #eaf1ff;
+  --panel: #f6f9ff;
+  --border: #2a66a3;
+  --bg: #f4f7ff;
+  --soft: #eef4ff;
 }
 @font-face {
   font-family: "bootstrap-icons";
@@ -41,7 +46,6 @@ html,
 body {
   background: var(--bg);
   color: var(--ink);
-  /* background-image: url("/icons/BACKGROUND 2.svg"); */
 }
 h1,
 h2,
@@ -120,7 +124,6 @@ h4 {
   text-decoration: none;
 }
 
-/* Text animatsiya */
 .display-title {
   font-weight: 600;
   line-height: 1.15;
@@ -129,7 +132,6 @@ h4 {
   color: #003262;
 }
 
-/* 2 rangli animatsion gradient (tez va barqaror) */
 .display-title .duo {
   display: inline-block;
   background: linear-gradient(90deg, #003262, #0000ff, #003262);
@@ -154,7 +156,6 @@ h4 {
   }
 }
 
-/* Agar loyihada eski .text-gradient bo‘lsa, xalaqit bermasin */
 .text-gradient {
   background: none !important;
   color: inherit !important;

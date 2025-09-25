@@ -7,15 +7,12 @@
         </h2>
 
         <div class="stage position-relative mx-auto">
-          <!-- mahsulot -->
           <NuxtImg
             src="/images/pack-bottle.webp"
             alt="Nevroslim"
             class="product"
             loading="lazy"
           />
-
-          <!-- LEFT bubbles -->
           <div
             v-for="(it, i) in leftBubbles"
             :key="'l' + i"
@@ -32,7 +29,6 @@
             />
           </div>
 
-          <!-- RIGHT bubbles -->
           <div
             v-for="(it, i) in rightBubbles"
             :key="'r' + i"
@@ -78,13 +74,11 @@ const rightBubbles: Bubble[] = [
 
 const allBubbles = [...leftBubbles, ...rightBubbles];
 
-// pill joylashuvi (desktop)
 const pillStyle = (side: "left" | "right", y: number) =>
   ({ top: `${y}%`, [side]: "14px" } as const);
 
 import { onMounted } from "vue";
 
-/* Pills scrollda bittadan paydo bo‘lishi */
 onMounted(() => {
   const stage = document.querySelector(
     "#diseases .stage"
@@ -93,14 +87,11 @@ onMounted(() => {
 
   const pills = Array.from(stage.querySelectorAll<HTMLElement>(".pill"));
 
-  // Boshlang'ich holat: yashirin
   pills.forEach((el) => el.classList.add("will-reveal"));
 
-  // Sahna ko‘ringanda ketma-ket ko‘rsatamiz
   const io = new IntersectionObserver(
     (entries) => {
       if (entries.some((e) => e.isIntersecting)) {
-        // Yuqoridan pastga tartiblash
         pills.sort((a, b) => a.offsetTop - b.offsetTop);
 
         pills.forEach((el, i) => {
@@ -115,172 +106,3 @@ onMounted(() => {
   io.observe(stage);
 });
 </script>
-
-<style scoped>
-:root {
-  --border: #2a66a3;
-  --ink: #003262;
-  --muted: #5b6b8b;
-  --brand: #0000ff;
-  --brand2: #1e2dff;
-  --bg: #f4f7ff;
-}
-.diseases {
-  background: var(--bg);
-}
-
-.box {
-  border: 3px solid var(--border);
-  border-radius: 14px;
-  background: #f4f7ff;
-  /* padding: 22px 16px 28px; */
-}
-
-.title {
-  color: var(--ink);
-  font-weight: 500;
-  line-height: 1.15;
-  font-size: 40px;
-  margin: auto;
-}
-.accent {
-  background: linear-gradient(90deg, var(--brand), var(--brand2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: #0000ff;
-}
-
-/* sahna */
-.stage {
-  min-height: 360px;
-  padding: 24px 0;
-}
-.product {
-  display: block;
-  width: 500px;
-  max-width: 62%;
-  margin: 0 auto;
-  user-select: none;
-  pointer-events: none;
-  filter: drop-shadow(0 18px 40px rgba(16, 48, 120, 0.18));
-}
-/* pills */
-.pill {
-  position: absolute;
-  background: #fff;
-  border: 1px solid #e6f0ff;
-  box-shadow: 0 10px 24px rgba(26, 42, 96, 0.1);
-  border-radius: 999px;
-  padding: 0.9rem 1.5rem;
-  font-weight: 600;
-  color: #003262;
-  max-width: 400px;
-  font-size: 17px;
-  transition: transform 0.5s ease;
-}
-.pill:hover {
-  transform: scale(1.2);
-}
-.pill.left {
-  text-align: left;
-}
-.pill.right {
-  text-align: left;
-}
-.pill .avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-/* mobile/grid ko'rinish */
-.pill.static {
-  position: static;
-  width: 100%;
-}
-
-@media (max-width: 991.98px) {
-  .product {
-    max-width: 60%;
-  }
-}
-@media (max-width: 767.98px) {
-  .box {
-    padding: 18px 12px 18px;
-  }
-  .product {
-    max-width: 68%;
-  }
-}
-@media (max-width: 600px) {
-  .title {
-    font-size: 24px;
-  }
-  .box {
-    padding: 0;
-  }
-  .stage {
-    margin-left: -0.8rem !important;
-    margin-right: -0.8rem !important;
-  }
-  .pill {
-    padding: 0 5px;
-    font-size: 6px;
-  }
-  .left {
-    left: 0 !important;
-  }
-  .right {
-    right: 0 !important;
-  }
-  .product {
-    margin-top: 4rem;
-  }
-}
-@keyframes floating {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-.product {
-  animation: floating 8s ease-in-out infinite;
-  z-index: 0;
-}
-
-/* === Scroll reveal (bittadan) === */
-.pill.will-reveal {
-  opacity: 0;
-  transform: translateX(var(--dx, 0)) scale(0.98);
-  will-change: transform, opacity;
-}
-.pill.left.will-reveal {
-  --dx: -28px;
-}
-.pill.right.will-reveal {
-  --dx: 28px;
-}
-
-/* Ko‘ringan holat */
-.pill.in {
-  opacity: 1;
-  transform: translateX(0) scale(1);
-  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.55s;
-}
-
-/* Harakatni kamaytirish rejimi */
-@media (prefers-reduced-motion: reduce) {
-  .pill.will-reveal,
-  .pill.in {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-}
-</style>

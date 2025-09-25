@@ -17,7 +17,6 @@
         </div>
 
         <div class="row g-3 extracts-grid">
-          <!-- chap ustun -->
           <div class="col-12 col-lg-6">
             <div class="extract-item reveal-left">
               <div class="thumb">
@@ -65,7 +64,6 @@
             </div>
           </div>
 
-          <!-- o‘ng ustun -->
           <div class="col-12 col-lg-6">
             <div class="extract-item reveal-right">
               <div class="thumb">
@@ -124,7 +122,6 @@
       </div>
     </div>
 
-    <!-- fon bezak -->
     <svg
       class="aboutdna2"
       width="396"
@@ -149,11 +146,9 @@
       />
     </svg>
 
-    <!-- ===== CERT SECTION ===== -->
     <div class="classformargin">
       <div class="cert-box mx-auto">
         <div class="row align-items-center g-4">
-          <!-- chap: timeline (typing) -->
           <div class="col-12 col-lg-5">
             <h3 class="section-title mb-4">Сертификатланган</h3>
 
@@ -198,10 +193,8 @@
             </ul>
           </div>
 
-          <!-- o‘ng: sahna/slider -->
           <div class="col-12 col-lg-7">
             <div class="cert-stage">
-              <!-- Har ikki rasm ham kliklanadi va fullscreen modal ochadi -->
               <NuxtImg
                 loading="lazy"
                 class="doc doc-bg doc-1 pointer"
@@ -221,7 +214,6 @@
                 @click="openImageFullscreen(certs[certIndex])"
               />
 
-              <!-- ichki prev/next -->
               <button
                 class="nav in left ps-2"
                 @click="prevCert"
@@ -290,11 +282,9 @@
       </div>
     </div>
 
-    <!-- === Image fullscreen modal (gallery’dagi kabi) === -->
     <div class="modal fade" id="imgFullscreen" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-fullscreen">
         <div class="modal-content border-0 bg-black">
-          <!-- Close button -->
           <button
             type="button"
             class="btn-close btn-close-white fs-close"
@@ -322,14 +312,12 @@
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
 import IconsAboutDna from "~/components/Icons/AboutDna.vue";
 
-/* ====== Slider images ====== */
 const certs = ["/images/cert1.webp", "/images/cert2.webp"];
 const certIndex = ref(0);
 const nextCert = () => (certIndex.value = (certIndex.value + 1) % certs.length);
 const prevCert = () =>
   (certIndex.value = (certIndex.value - 1 + certs.length) % certs.length);
 
-/* ====== Image fullscreen (gallery bilan bir xil mantiq) ====== */
 const currentImg = ref<string | null>(null);
 
 const escClose = (e: KeyboardEvent) => {
@@ -338,13 +326,11 @@ const escClose = (e: KeyboardEvent) => {
 
 const closeImageFullscreen = () => {
   const el = document.getElementById("imgFullscreen")!;
-  // @ts-ignore
   const BS = (window as any).bootstrap;
   if (BS?.Modal) {
     const inst = BS.Modal.getInstance(el) || BS.Modal.getOrCreateInstance(el);
     inst.hide();
   } else {
-    // Fallback
     el.classList.remove("show");
     el.style.display = "none";
     el.setAttribute("aria-hidden", "true");
@@ -356,7 +342,6 @@ const closeImageFullscreen = () => {
 const openImageFullscreen = (src: string) => {
   currentImg.value = src;
   const el = document.getElementById("imgFullscreen")!;
-  // @ts-ignore
   const BS = (window as any).bootstrap;
 
   if (BS?.Modal) {
@@ -371,7 +356,6 @@ const openImageFullscreen = (src: string) => {
       { once: true }
     );
   } else {
-    // Fallback
     el.classList.add("show");
     el.style.display = "block";
     el.removeAttribute("aria-hidden");
@@ -382,11 +366,9 @@ const openImageFullscreen = (src: string) => {
     el.addEventListener("click", backdropClose, { once: true });
   }
 
-  // ESC bilan yopish
   document.addEventListener("keydown", escClose);
 };
 
-/* ====== Scroll animations ====== */
 const sectionRef = ref<HTMLElement | null>(null);
 const timelineRef = ref<HTMLElement | null>(null);
 const typedOnce = ref(false);
@@ -465,323 +447,3 @@ onBeforeUnmount(() => {
   document.removeEventListener("keydown", escClose);
 });
 </script>
-
-<style scoped>
-:root {
-  --ink: #10305a;
-  --muted: #5b6b8b;
-  --border: #2a66a3;
-  --soft: #eef4ff;
-  --brand: #0b5fff;
-}
-
-/* umumiy fon */
-.about-wrap {
-  background: #f4f7ff;
-}
-
-/* SECTION TITLES */
-.section-title {
-  color: #003262;
-  font-weight: 500;
-  line-height: 1.2;
-  font-size: 40px;
-  max-width: 999px;
-  margin: auto;
-}
-
-/* ====== EXTRACTS ====== */
-.extracts-box {
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  padding: 30px 0;
-  position: relative;
-}
-.extracts-head {
-  padding: 0.5rem 1rem 1rem;
-}
-.extracts-grid {
-  padding: 10px 8px;
-}
-
-.aboutdna,
-.aboutdna2 {
-  position: absolute;
-}
-.aboutdna {
-  margin-top: -3rem;
-}
-.aboutdna2 {
-  margin-top: -6rem;
-  right: 0;
-}
-
-.extract-item {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  background: #fdfeff;
-  border: 1px solid #e4eeff;
-  border-radius: 14px;
-  padding: 8px;
-  margin-bottom: 14px;
-  transition: transform 0.35s ease, background 0.35s ease, opacity 0.35s ease;
-}
-.extract-item:hover {
-  background: #e8efff;
-  transform: translateY(-5px);
-}
-.thumb {
-  flex: 0 0 140px;
-  background: var(--soft);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 110px;
-}
-.thumb img {
-  max-height: 110px;
-  width: auto;
-}
-.text {
-  flex: 1;
-}
-.item-title {
-  color: #003262;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-  font-size: 22px;
-}
-.item-desc {
-  color: #01101e;
-  margin: 0;
-  font-size: 16px;
-}
-.extracts-foot {
-  height: 10px;
-  margin: 6px 6px 0;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-
-/* ====== CERT ====== */
-.cert-box {
-  border: 2px solid var(--border);
-  border-radius: 14px;
-  background: #f4f7ff;
-}
-
-/* Timeline */
-.timeline {
-  position: relative;
-  margin: 0;
-  padding-left: 22px;
-}
-.timeline::before {
-  content: "";
-  position: absolute;
-  left: 7px;
-  top: 4px;
-  bottom: 4px;
-  width: 2px;
-  background: #b9d2f3;
-}
-.titem {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 4.5rem;
-  position: relative;
-}
-.titem:last-child {
-  margin-bottom: 0;
-}
-.dot {
-  position: absolute;
-  left: -2px;
-  top: 12px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #fff;
-  border: 2px solid #7eacde;
-}
-.t-title {
-  color: #003262;
-  font-weight: 500;
-  font-size: 28px;
-  line-height: 1.2;
-}
-.t-desc {
-  color: #003262;
-  font-size: 16px;
-}
-.t-title,
-.t-desc {
-  margin-left: 1.5rem;
-}
-
-/* CERT stage */
-.cert-stage {
-  position: relative;
-  border-radius: 16px;
-  padding: 18px 18px 42px;
-  overflow: hidden;
-  min-height: 620px;
-}
-.doc {
-  width: 58%;
-  height: auto;
-  display: block;
-  position: absolute;
-  left: 60%;
-  top: 6%;
-  transform-origin: center;
-  user-select: none;
-}
-.doc-bg {
-  transform: translateX(-50%) rotate(-2deg);
-  opacity: 0.75;
-  width: 53%;
-  top: 10%;
-}
-.doc-fg {
-  transform: translateX(-50%) rotate(0deg);
-  border-radius: 10px;
-}
-.doc-1 {
-  left: 40%;
-}
-.pointer {
-  cursor: zoom-in;
-}
-
-/* inner navs */
-.nav.in {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 43px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  color: #0070ff;
-  display: grid;
-  place-items: center;
-  font-size: 22px;
-  z-index: 3;
-  padding-bottom: 2.5rem !important;
-  background: transparent;
-}
-.nav.in.left {
-  left: 50px;
-}
-.nav.in.right {
-  right: 50px;
-}
-
-/* pager */
-.pager {
-  position: absolute;
-  left: 50%;
-  bottom: 10px;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-  z-index: 3;
-}
-.dot-pg {
-  width: 36px;
-  height: 6px;
-  background: #cfe0fb;
-  border-radius: 999px;
-  transition: all 0.25s ease;
-  cursor: pointer;
-}
-.dot-pg.active {
-  width: 60px;
-  background: #7fb0ff;
-}
-
-/* === Fullscreen image modal (gallery uslubi) === */
-.img-fs {
-  max-width: 100%;
-  max-height: 100vh;
-  object-fit: contain;
-}
-#imgFullscreen .modal-content {
-  position: relative;
-}
-.fs-close {
-  position: absolute;
-  top: 12px;
-  right: 7rem;
-  z-index: 2;
-  filter: invert(1);
-}
-
-@media (max-width: 768px) {
-  .section-title {
-    font-size: 24px;
-  }
-  .extracts-box {
-    padding: 20px 12px 8px;
-  }
-  .cert-stage {
-    min-height: 500px;
-    padding: 12px 12px 38px;
-  }
-  .doc {
-    width: 78%;
-    top: 8%;
-  }
-  .doc-bg {
-    width: 74%;
-  }
-  .nav.in {
-    width: 40px;
-    height: 15px;
-    font-size: 20px;
-    font-weight: 800;
-  }
-  .nav.in.left {
-    left: 0;
-  }
-  .nav.in.right {
-    right: 0;
-  }
-  .dot-pg {
-    width: 28px;
-  }
-  .dot-pg.active {
-    width: 44px;
-  }
-}
-
-/* ====== Scroll reveal ====== */
-.reveal-left,
-.reveal-right {
-  opacity: 0;
-  transform: translateX(var(--dx, 0));
-}
-.reveal-left {
-  --dx: -40px;
-}
-.reveal-right {
-  --dx: 40px;
-}
-.reveal-left.in,
-.reveal-right.in {
-  opacity: 1;
-  transform: translateX(0);
-  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.7s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .reveal-left,
-  .reveal-right {
-    transition: opacity 0.1s ease;
-    transform: none !important;
-  }
-}
-</style>

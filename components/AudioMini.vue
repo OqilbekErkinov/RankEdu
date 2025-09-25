@@ -3,10 +3,9 @@
     class="audio-mini d-flex align-items-center gap-3 p-2 soft-card"
     style="z-index: 100"
   >
-    <!-- Play/Pause -->
     <button
-      class="btn rounded-circle p-0 d-grid place-items-center"
-      style="width: 36px; height: 36px"
+      class="btn rounded-circle p-0 d-grid place-items-center mb-2"
+      style=""
       :aria-label="isPlaying ? 'Pause audio' : 'Play audio'"
       @click="toggle"
     >
@@ -20,7 +19,6 @@
       >{{ currentTime }}/{{ duration }}</span
     >
 
-    <!-- Progress -->
     <div class="flex-grow-1">
       <div class="d-flex"></div>
       <div class="progress progress-sm mt-1">
@@ -33,7 +31,6 @@
       </div>
     </div>
 
-    <!-- Volume -->
     <button
       aria-label="Mute/unmute"
       class="btn btn-link text-muted p-0"
@@ -46,7 +43,6 @@
       <i style="color: #003262" class="bi bi-three-dots-vertical"></i>
     </button>
 
-    <!-- ⚡️ audio: src VQ ichida faqat Play bosilganda qo‘yiladi -->
     <audio
       ref="audio"
       preload="none"
@@ -69,7 +65,6 @@ const isPlaying = ref(false);
 const muted = ref(false);
 const pct = ref(0);
 
-// 🔑 faqat Play bosilganda source qo'yilishi uchun flag
 const canLoad = ref(false);
 
 const currentTime = computed(() => format(audio.value?.currentTime || 0));
@@ -87,21 +82,18 @@ function format(s: number) {
 async function toggle() {
   if (!audio.value) return;
 
-  // Birinchi marta: source'ni ulab, keyin o'ynatamiz
   if (!canLoad.value) {
-    canLoad.value = true; // <source> DOMga kirdi
-    await nextTick(); // audio ichida <source> paydo bo'ldi
+    canLoad.value = true;
+    await nextTick();
     try {
       await audio.value!.play();
       isPlaying.value = true;
     } catch (e) {
-      // autoplay policy yoki boshqalar – foydalanuvchi takror bosadi
       isPlaying.value = false;
     }
     return;
   }
 
-  // Keyingi bosishlarda oddiy play/pause
   if (isPlaying.value) {
     audio.value.pause();
     isPlaying.value = false;

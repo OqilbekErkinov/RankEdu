@@ -8,8 +8,6 @@ const send = async () => {
     await $fetch('/api/order', { method:'POST', body:{ ...m, source:'order-modal' }})
     m.name=''; m.phone='';
     const el = document.getElementById('orderModal')
-    // yopish
-    // @ts-ignore
     const modal = bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el)
     modal.hide()
     alert('Заявка юборилди! Тез орада боғланамиз.')
