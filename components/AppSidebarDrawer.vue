@@ -25,19 +25,32 @@
           <i class="bi bi-person"></i> Profil
         </NuxtLink>
       </li>
+
       <li class="nav-item">
-        <a class="nav-link sdw-link" href="#"
-          ><i class="bi bi-journal-bookmark"></i> Kurslar</a
+        <NuxtLink
+          class="nav-link sdw-link"
+          active-class="active"
+          to="/reyting"
+          @click="$emit('close')"
+          ><i class="bi bi-trophy"></i> Reyting
+        </NuxtLink>
+      </li>
+      <li class="nav-item">
+        <NuxtLink
+          class="nav-link sdw-link"
+          active-class="active"
+          to="/messenger"
+          @click="$emit('close')"
+          ><i class="bi bi-messenger"></i> Messenger</NuxtLink
         >
       </li>
       <li class="nav-item">
-        <a class="nav-link sdw-link" href="#"
-          ><i class="bi bi-trophy"></i> Reyting</a
-        >
-      </li>
-      <li class="nav-item">
-        <a class="nav-link sdw-link" href="#"
-          ><i class="bi bi-stars"></i> AI Tavsiyalar</a
+        <NuxtLink
+          class="nav-link sdw-link"
+          active-class="active"
+          to="/service"
+          @click="$emit('close')"
+          ><i class="bi bi-stars"></i> Service</NuxtLink
         >
       </li>
     </ul>

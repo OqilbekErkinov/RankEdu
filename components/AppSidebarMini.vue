@@ -21,20 +21,33 @@
           <i class="bi bi-person"></i>
         </NuxtLink>
       </li>
+
       <li class="nav-item">
-        <a class="smini-link" href="#" title="Kurslar"
-          ><i class="bi bi-journal-bookmark"></i
-        ></a>
+        <NuxtLink
+          class="nav-link sdw-link"
+          active-class="active"
+          to="/reyting"
+          @click="$emit('close')"
+          ><i class="bi bi-trophy"></i>
+        </NuxtLink>
       </li>
       <li class="nav-item">
-        <a class="smini-link" href="#" title="Reyting"
-          ><i class="bi bi-trophy"></i
-        ></a>
+        <NuxtLink
+          class="nav-link sdw-link"
+          active-class="active"
+          to="/messenger"
+          @click="$emit('close')"
+          ><i class="bi bi-messenger"></i
+        ></NuxtLink>
       </li>
       <li class="nav-item">
-        <a class="smini-link" href="#" title="AI Tavsiyalar"
-          ><i class="bi bi-stars"></i
-        ></a>
+        <NuxtLink
+          class="nav-link sdw-link"
+          active-class="active"
+          to="/service"
+          @click="$emit('close')"
+          ><i class="bi bi-stars"></i></NuxtLink
+        >
       </li>
     </ul>
   </aside>
