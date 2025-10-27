@@ -1,0 +1,176 @@
+:root {
+  --primary: #1c7ef2;
+  --bg: #f5f7fb; /* kulrang kontent foni */
+  --card: #ffffff; /* oq kartalar */
+  --line: #e8ecf3;
+}
+
+/* Global bazalar */
+.rankedu {
+  background: var(--card);
+  min-height: 100vh;
+}
+.brand {
+  color: var(--primary);
+}
+.text-primary {
+  color: var(--primary) !important;
+}
+
+/* Navbar */
+.icon-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+.icon-btn:hover {
+  background: var(--bg);
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e9eef7;
+}
+
+/* Layout grid */
+.app-body {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+}
+
+/* Mini sidebar */
+.sidebar-mini {
+  position: sticky;
+  top: 64px;
+  height: calc(100vh - 64px);
+  z-index: 10;
+}
+.smini-link {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #2b3038;
+  border: 1px solid var(--line);
+  margin: 10px 0;
+  transition: 0.15s;
+}
+.smini-link:hover {
+  background: var(--bg);
+  color: var(--primary);
+}
+.smini-link.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Drawer */
+.sidebar-drawer {
+  position: fixed;
+  inset: 64px auto auto 0;
+  width: 320px;
+  height: calc(100vh - 64px);
+  background: #fff;
+  border-right: 1px solid var(--line);
+  border-top-right-radius: 24px;
+  border-bottom-right-radius: 24px;
+  z-index: 1050;
+  overflow: auto;
+}
+.logo-square {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.sdw-link {
+  color: #3b4453;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sdw-link:hover {
+  background: #f2f6ff;
+  color: var(--primary);
+}
+.sdw-link.active {
+  background: var(--primary);
+  color: #fff;
+}
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: transform 0.2s ease;
+}
+.drawer-enter-from,
+.drawer-leave-to {
+  transform: translateX(-100%);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 64px 0 0 0;
+  background: rgba(17, 24, 39, 0.35);
+  backdrop-filter: blur(1px);
+  z-index: 1040;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Kontent zona */
+.content {
+  background: var(--bg);
+  padding: 24px;
+  min-height: calc(100vh - 64px);
+}
+
+/* Hero umumiy ko‘rinish (index sahifa foydalanadi) */
+.hero-frame {
+  background: #eef3fb;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 6px 16px rgba(16, 24, 40, 0.06);
+}
+.illustration {
+  background: #0d1324;
+  height: 260px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.illus-text {
+  color: #9fd0ff;
+  font-size: 28px;
+  opacity: 0.9;
+}
+
+@media (max-width: 992px) {
+  .app-body {
+    grid-template-columns: 56px 1fr;
+  }
+  .sidebar-drawer {
+    width: 300px;
+  }
+  .illustration {
+    height: 220px;
+  }
+}

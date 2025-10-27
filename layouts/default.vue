@@ -1,10 +1,35 @@
 <template>
-  <div>
-    <SiteNavbar />
-    <main>
-      <slot />
-    </main>
-    <SiteFooter />
-    <OrderModal />
+  <div class="rankedu">
+    <!-- NAVBAR -->
+    <AppNavbar @toggle-sidebar="toggleSidebar" />
+
+    <div class="app-body">
+      <!-- MINI SIDEBAR (doimiy) -->
+      <AppSidebarMini />
+
+      <!-- DRAWER SIDEBAR (toggle bilan ochiladi) -->
+      <transition name="drawer">
+        <AppSidebarDrawer v-if="isSidebarOpen" @close="isSidebarOpen=false" />
+      </transition>
+
+      <transition name="fade">
+        <div v-if="isSidebarOpen" class="backdrop" @click="isSidebarOpen=false"></div>
+      </transition>
+
+      <!-- KONTENT ZONASI: faqat shu qism sahifa bo‘yicha o‘zgaradi -->
+      <main class="content">
+        <slot />
+      </main>
+    </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import AppNavbar from '~/components/AppNavbar.vue'
+import AppSidebarMini from '~/components/AppSidebarMini.vue'
+import AppSidebarDrawer from '~/components/AppSidebarDrawer.vue'
+
+const isSidebarOpen = ref(false)
+const toggleSidebar = () => { isSidebarOpen.value = !isSidebarOpen.value }
+</script>

@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   app: {
     head: {
-      title: 'Nevroslim — Асаб касалликларига табобий ечим',
+      title: 'RankEdu - O`zbekiston milliy ta`lim platformasi',
       htmlAttrs: { lang: 'uz' },
       link: [
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
@@ -12,17 +12,7 @@ export default defineNuxtConfig({
   css: [
     'bootstrap/dist/css/bootstrap.min.css',
     'bootstrap-icons/font/bootstrap-icons.css', 
-    '@/assets/css/main.css',
-    '@/assets/css/header.css',
-    '@/assets/css/footer.css',
-    '@/assets/css/hero.css',
-    '@/assets/css/about.css',
-    '@/assets/css/advise.css',
-    '@/assets/css/benefit.css',
-    '@/assets/css/bigplayer.css',
-    '@/assets/css/contact.css',
-    '@/assets/css/diseases.css',
-    '@/assets/css/expert.css',
+    '@/assets/css/theme.css',
   ],
 
   plugins: [
@@ -31,7 +21,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      siteName: 'Nevroslim'
+      siteName: 'RankEdu'
     }
   },
   modules: ['@nuxt/image'],
