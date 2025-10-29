@@ -7,7 +7,7 @@
         <div class="card border-0 shadow-sm h-100 p-3">
           <div class="d-flex align-items-center gap-3">
             <div class="ava-circle sm">
-              <img :src="avatar2" alt="Profil2" class="profilavatar2" />
+              {{ initials }}
             </div>
             <div class="flex-grow-1">
               <div class="fw-semibold">{{ user.fullname }}</div>
@@ -58,7 +58,7 @@
 
           <div class="d-flex align-items-center gap-4">
             <div class="ava-circle xl">
-              <img :src="avatar2" alt="Profil3" class="profilavatar" />
+              {{ initials }}
             </div>
             <div class="flex-grow-1">
               <h3 class="mb-1">{{ user.fullname }}</h3>
@@ -137,7 +137,6 @@
 
 <script setup>
 
-import avatar2 from '~/assets/images/avatar2.jpg'
 const user = {
   fullname: "Alijonova Rayxona Akmaljon qizi",
   universityShort: "FDTU",
