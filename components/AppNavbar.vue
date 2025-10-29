@@ -47,7 +47,7 @@
             @click="toggle"
             ref="profileBtn"
           >
-            <img src="/images/avatar.jpg" alt="Profil" class="avatar" />
+            <img src="/images/avatar2.jpg" alt="Profil" class="avatar" />
           </button>
 
           <transition name="fade-scale">
@@ -69,14 +69,14 @@
 
               <!-- Header -->
               <div class="text-center pt-4 pb-2">
-                <div class="fw-bold mb-2 phone">+998 93 643 99 77</div>
+                <div class="fw-bold mb-2 phone">+998 90 162 55 35</div>
                 <img
-                  src="/images/avatar.jpg"
+                  src="/images/avatar2.jpg"
                   alt="Avatar"
                   class="avatar xl mb-3"
                 />
-                <div class="fw-semibold fs-4">Окилбек Эркинов</div>
-                <div class="text-muted">erkinovoqilbek@gmail.com</div>
+                <div class="fw-semibold fs-4">Alijonova Rayxona Akmaljon qizi</div>
+                <div class="text-muted">rayxonaalijonova@gmail.com</div>
               </div>
 
               <!-- List -->
