@@ -163,7 +163,7 @@ const services = ref([
   },
   {
     id: 4,
-    title: "O`qituvchilik dasturi",
+    title: "Mentorlik dasturi",
     desc: "O‘qituvchi yoki mentor bilan uchrashuvni rejalashtirish",
     badge: "Mavjud",
     icon: "bi bi-people",
