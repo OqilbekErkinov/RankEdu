@@ -7,11 +7,7 @@
         <div class="card border-0 shadow-sm h-100 p-3">
           <div class="d-flex align-items-center gap-3">
             <div class="ava-circle sm">
-              <img
-                src="/images/avatar2.jpg"
-                alt="Profil"
-                class="profilavatar2"
-              />
+              <img :src="avatar2" alt="Profil2" class="profilavatar2" />
             </div>
             <div class="flex-grow-1">
               <div class="fw-semibold">{{ user.fullname }}</div>
@@ -62,11 +58,7 @@
 
           <div class="d-flex align-items-center gap-4">
             <div class="ava-circle xl">
-              <img
-                src="/images/avatar2.jpg"
-                alt="Profil"
-                class="profilavatar"
-              />
+              <img :src="avatar2" alt="Profil3" class="profilavatar" />
             </div>
             <div class="flex-grow-1">
               <h3 class="mb-1">{{ user.fullname }}</h3>
@@ -144,6 +136,8 @@
 </template>
 
 <script setup>
+
+import avatar2 from '~/assets/images/avatar2.jpg'
 const user = {
   fullname: "Alijonova Rayxona Akmaljon qizi",
   universityShort: "FDTU",
@@ -320,5 +314,4 @@ definePageMeta({ layout: "default" });
   border-radius: 50%;
   object-fit: cover;
 }
-
 </style>
