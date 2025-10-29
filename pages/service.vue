@@ -167,7 +167,7 @@ const services = ref([
     desc: "O‘qituvchi yoki mentor bilan uchrashuvni rejalashtirish",
     badge: "Mavjud",
     icon: "bi bi-people",
-    cta: "Uchrashuv belgilash",
+    cta: "Uchrashuvni belgilash",
     color: "c-teal",
   },
   {
