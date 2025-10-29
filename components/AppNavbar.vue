@@ -47,7 +47,7 @@
             @click="toggle"
             ref="profileBtn"
           >
-            <img src="/images/avatar2.jpg" alt="Profil" class="avatar" />
+            <img src="/images/avatar.jpg" alt="Profil" class="avatar" />
           </button>
 
           <transition name="fade-scale">
@@ -71,7 +71,7 @@
               <div class="text-center pt-4 pb-2">
                 <div class="fw-bold mb-2 phone">+998 90 162 55 35</div>
                 <img
-                  src="/images/avatar2.jpg"
+                  src="/images/avatar.jpg"
                   alt="Avatar"
                   class="avatar xl mb-3"
                 />
