@@ -119,7 +119,7 @@ const activePeriod = ref("weekly");
 // Demo ma’lumotlar
 const data = {
   daily: [
-    { id: 1, name: "Sarah Chen", university: "Stanford", level: 15, xp: 12500 },
+    { id: 1, name: "Erkinov Oqilbek", university: "TIFT", level: 1, xp: 9950 },
     { id: 2, name: "Michael Ross", university: "MIT", level: 14, xp: 11800 },
     { id: 3, name: "Emma Wilson", university: "Harvard", level: 14, xp: 11200 },
     { id: 4, name: "David Kim", university: "Berkeley", level: 13, xp: 10500 },
