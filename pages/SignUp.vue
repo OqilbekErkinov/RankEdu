@@ -33,7 +33,7 @@
           type="button"
           @click="goSignin"
         >
-          Sign in
+          Kirish
         </button>
       </div>
 
