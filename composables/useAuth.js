@@ -1,171 +1,150 @@
 // /composables/useAuth.js
 export const useAuth = () => {
-  // Global reaktiv holat (Nuxt useState bilan SSR-safe)
-  const userState = useState('auth.user', () => null)
-  const readyState = useState('auth.ready', () => false)
+  const userState = useState("auth.user", () => null);
+  const readyState = useState("auth.ready", () => false);
 
-  const SESSION_COOKIE = 'app_session_v1' // cookie nomi
-  const USERS_KEY = 'app_users_v1' // localStorage kaliti (client-side)
+  const SESSION_COOKIE = "app_session_v1";
+  const USERS_KEY = "app_users_v1";
 
-  // --- yordamchi: clientda localStorage bilan ishlash ---
-  function loadUsersFromLocal() {
-    if (process.client) {
-      try {
-        const raw = localStorage.getItem(USERS_KEY)
-        return raw ? JSON.parse(raw) : []
-      } catch (e) { return [] }
+  function loadUsers() {
+    if (!process.client) return [];
+    try {
+      return JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+    } catch {
+      return [];
     }
-    return []
   }
-  function saveUsersToLocal(users) {
-    if (!process.client) return
-    try { localStorage.setItem(USERS_KEY, JSON.stringify(users)) } catch {}
+  function saveUsers(u) {
+    if (!process.client) return;
+    try {
+      localStorage.setItem(USERS_KEY, JSON.stringify(u));
+    } catch {}
   }
 
-  // --- session cookie bilan ishlash (SSR-safe) ---
   function saveSessionCookie(payload) {
-    // payload: { userId, expiry }
-    // cookie expiry misol uchun 30 kun
-    const maxAge = 60 * 60 * 24 * 30
-    useCookie(SESSION_COOKIE).value = { ...payload, _savedAt: Date.now() }
-    // Nuxt useCookie avtomatik cookie o'rnatadi
+    // Nuxt useCookie ishlatamiz; avtomatik SSR-safe
+    useCookie(SESSION_COOKIE, {
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    }).value = payload;
   }
   function clearSessionCookie() {
-    useCookie(SESSION_COOKIE).value = null
+    useCookie(SESSION_COOKIE).value = null;
   }
   function loadSessionCookie() {
-    return useCookie(SESSION_COOKIE).value || null
+    return useCookie(SESSION_COOKIE).value || null;
   }
 
-  // --- sanitize user (password/hash olib tashlash) ---
   function sanitize(u) {
-    if (!u) return null
-    const { passHash, salt, ...rest } = u
-    return rest
+    if (!u) return null;
+    const { passHash, salt, ...rest } = u;
+    return rest;
   }
 
-  // --- helper: find user by email (client-side users store) ---
-  function findUserByEmail(email) {
-    const users = loadUsersFromLocal()
-    return users.find(x => x.email?.toLowerCase() === (email || '').toLowerCase())
+  // WebCrypto helperlar (client-only). Agar siz avvalgi PBKDF2 kodini ishlatsangiz, shu yerga ko‘chirib keling.
+  async function deriveKey(password, saltHex) {
+    // agar process.client bo'lmasa bu chaqirilmaydi
+    const enc = new TextEncoder();
+    const passKey = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(password),
+      { name: "PBKDF2" },
+      false,
+      ["deriveBits"]
+    );
+    const saltBuf = new Uint8Array(
+      saltHex.match(/.{1,2}/g).map((h) => parseInt(h, 16))
+    ).buffer;
+    const derived = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", salt: saltBuf, iterations: 120000, hash: "SHA-256" },
+      passKey,
+      32 * 8
+    );
+    return Array.from(new Uint8Array(derived))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
   }
-
-  // Web Crypto PBKDF2 funksiyalari (simple, client-only)
   async function genSalt(len = 16) {
-    const a = new Uint8Array(len)
-    crypto.getRandomValues(a)
-    return Array.from(a).map(b => b.toString(16).padStart(2, '0')).join('')
-  }
-  function hexToBuf(hex) {
-    const bytes = new Uint8Array(hex.length / 2)
-    for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16)
-    return bytes.buffer
-  }
-  function bufToHex(buf) {
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
-  }
-  async function deriveKey(password, saltHex, iterations = 120000, keyLen = 32) {
-    const enc = new TextEncoder()
-    const passKey = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits'])
-    const saltBuf = hexToBuf(saltHex)
-    const derived = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: saltBuf, iterations, hash: 'SHA-256' }, passKey, keyLen * 8)
-    return bufToHex(derived)
+    const a = new Uint8Array(len);
+    crypto.getRandomValues(a);
+    return Array.from(a)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
   }
 
-  // --- register / login / logout / init functions ---
-  async function register({ fullname, email, phone, password, avatarDataUrl = null }) {
-    if (!process.client) throw new Error('Register is client-only (local demo).')
-
-    if (!email || !password) throw new Error('Email va parol kerak.')
-
-    const existing = findUserByEmail(email)
-    if (existing) throw new Error('Ushbu email bilan foydalanuvchi mavjud.')
-
-    const salt = await genSalt(16)
-    const passHash = await deriveKey(password, salt, 120000, 32)
-
-    const users = loadUsersFromLocal()
-    const id = 'u_' + Math.random().toString(36).slice(2, 9)
+  async function register({ fullname, email, phone, password, avatar }) {
+    if (!process.client) throw new Error("Register is client-only demo");
+    const users = loadUsers();
+    if (users.find((u) => u.email.toLowerCase() === email.toLowerCase()))
+      throw new Error("Email mavjud");
+    const salt = await genSalt(16);
+    const passHash = await deriveKey(password, salt);
+    const id = "u_" + Math.random().toString(36).slice(2, 9);
     const newUser = {
       id,
-      fullname: fullname || '',
+      fullname,
       email,
-      phone: phone || '',
-      avatar: avatarDataUrl || null,
+      phone,
+      avatar: avatar || null,
       salt,
       passHash,
-      createdAt: Date.now()
-    }
-    users.push(newUser)
-    saveUsersToLocal(users)
-
-    // create session cookie and set state
-    saveSessionCookie({ userId: id, expiry: Date.now() + 1000 * 60 * 60 * 24 * 30 })
-    userState.value = sanitize(newUser)
-    readyState.value = true
-    return sanitize(newUser)
+      createdAt: Date.now(),
+    };
+    users.push(newUser);
+    saveUsers(users);
+    // session cookie
+    saveSessionCookie({
+      userId: id,
+      expiry: Date.now() + 1000 * 60 * 60 * 24 * 30,
+    });
+    userState.value = sanitize(newUser);
+    readyState.value = true;
+    return sanitize(newUser);
   }
 
   async function login({ email, password }) {
-    if (!process.client) throw new Error('Login is client-only (local demo).')
-    const user = findUserByEmail(email)
-    if (!user) throw new Error('Foydalanuvchi topilmadi.')
-
-    const derived = await deriveKey(password, user.salt, 120000, 32)
-    if (derived !== user.passHash) throw new Error('Parol noto`g`ri.')
-
-    saveSessionCookie({ userId: user.id, expiry: Date.now() + 1000 * 60 * 60 * 24 * 30 })
-    userState.value = sanitize(user)
-    readyState.value = true
-    return sanitize(user)
+    if (!process.client) throw new Error("Login is client-only demo");
+    const users = loadUsers();
+    const u = users.find((x) => x.email.toLowerCase() === email.toLowerCase());
+    if (!u) throw new Error("Foydalanuvchi topilmadi");
+    const derived = await deriveKey(password, u.salt);
+    if (derived !== u.passHash) throw new Error("Parol not to‘g‘ri");
+    saveSessionCookie({
+      userId: u.id,
+      expiry: Date.now() + 1000 * 60 * 60 * 24 * 30,
+    });
+    userState.value = sanitize(u);
+    readyState.value = true;
+    return sanitize(u);
   }
 
   function logout() {
-    clearSessionCookie()
-    userState.value = null
-    readyState.value = true
-    // client-side: optional clear session storage
-    if (process.client) {
-      // do not delete users list
-    }
+    clearSessionCookie();
+    userState.value = null;
+    readyState.value = true;
   }
 
-  // update profile (merge and persist to localStorage)
-  function updateProfile(patch = {}) {
-    if (!process.client) throw new Error('updateProfile is client-only')
-    if (!userState.value) throw new Error('Not authenticated')
-    const users = loadUsersFromLocal()
-    const idx = users.findIndex(u => u.id === userState.value.id)
-    if (idx === -1) throw new Error('Foydalanuvchi topilmadi')
-    users[idx] = { ...users[idx], ...patch }
-    saveUsersToLocal(users)
-    userState.value = sanitize(users[idx])
-  }
-
-  // init: try to load session cookie and restore userState
   function initFromStorage() {
-    // can be called server or client; cookie works both sides in Nuxt
-    const sess = loadSessionCookie()
-    if (!sess || !sess.userId) {
-      readyState.value = true
-      return
+    // cookie ishlaydi ham serverda ham clientda; lekin localStorage faqat client
+    const s = loadSessionCookie();
+    if (!s || !s.userId) {
+      readyState.value = true;
+      return;
     }
-    // If on server, we cannot access localStorage, so only restore minimal info from cookie
     if (process.server) {
-      // Try to find user id in cookie only; full profile will be loaded on client
-      userState.value = { id: sess.userId } // placeholder
-      readyState.value = true
-      return
+      // serverda faqat id saqlab qo'ymiz; batafsil profil clientda yuklanadi
+      userState.value = { id: s.userId };
+      readyState.value = true;
+      return;
     }
-    // client: load full user from localStorage users list
-    const users = loadUsersFromLocal()
-    const u = users.find(x => x.id === sess.userId)
-    if (u) userState.value = sanitize(u)
-    readyState.value = true
+    const users = loadUsers();
+    const u = users.find((x) => x.id === s.userId);
+    if (u) userState.value = sanitize(u);
+    readyState.value = true;
   }
 
-  // call init immediately
-  initFromStorage()
+  initFromStorage();
 
   return {
     user: computed(() => userState.value),
@@ -173,6 +152,14 @@ export const useAuth = () => {
     register,
     login,
     logout,
-    updateProfile
-  }
-}
+    updateProfile: (patch) => {
+      if (!process.client) throw new Error("client-only");
+      if (!userState.value) throw new Error("not auth");
+      const users = loadUsers();
+      const idx = users.findIndex((x) => x.id === userState.value.id);
+      users[idx] = { ...users[idx], ...patch };
+      saveUsers(users);
+      userState.value = sanitize(users[idx]);
+    },
+  };
+};

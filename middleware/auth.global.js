@@ -1,22 +1,27 @@
-// /middleware/auth.global.js
+// /middleware/auth.global.ts
 export default defineNuxtRouteMiddleware((to, from) => {
-  const auth = useAuth() // endi ishlashi kerak: composable auto-import
-  const user = auth.user.value
-  const ready = auth.ready.value
+  // useAuth composable-ni chaqirish (auto-import bilan)
+  const auth = useAuth()
 
-  // agar hali init tugamagan bo'lsa, kutish uchun oddiy yondashuv:
-  if (!ready) {
-    // qisqa kutish strategiyasi: allow navigation and client-side redirect
+  // auth.ready.value - init tugagani haqida flag bo'lishi mumkin.
+  // Agar init hali tugamagan bo'lsa, middleware muammosiz davom etsin (clientda init keyin redirect ishlaydi)
+  if (!auth.ready.value) {
+    // serverda yoki init vaqtida navga to'liq aralashmaslik uchun return qilamiz
+    // qayta clientda redirect qilinadi (auth ready bo'lgach)
     return
   }
 
-  // guest sahifalar (signin/signup) - agar allaqachon login bo'lsa bosh sahifaga yo'naltirish
+  const user = auth.user.value
+
+  // Agar tashrif buyurilayotgan sahifa signin/signup bo'lsa va user mavjud bo'lsa -> home ga yo'naltir
   if ((to.path === '/signin' || to.path === '/signup') && user) {
-    return navigateTo('/') // yoki to.meta.home
+    return navigateTo('/')
   }
 
-  // protected routes: agar foydalanuvchi yo'q bo'lsa signin ga yubor
-  if (to.meta.requiresAuth && !user) {
+  // Barcha boshqa sahifalar: agar user mavjud bo'lmasa, /signin ga yo'naltir
+  if (!user && to.path !== '/signin' && to.path !== '/signup') {
     return navigateTo('/signin')
   }
+
+  // aks holda yo'lni davom ettir
 })
