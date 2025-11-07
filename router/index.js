@@ -1,10 +1,10 @@
 // router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import SignIn from '@/pages/SignIn.vue'
-import SignUp from '@/pages/SignUp.vue'
+import SignIn from '~/pages/signin.vue'
+import SignUp from '~/pages/signup.vue'
 import Home from '@/pages/Home.vue'
 import Profile from '@/pages/Profile.vue'
-import { useAuth } from '@/composables/useAuth'
+import { useAuth } from '~/composables/useAuth'
 
 const routes = [
   { path: '/signin', component: SignIn, meta: { guest: true } },
