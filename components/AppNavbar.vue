@@ -58,6 +58,8 @@ const routeName = computed(() => {
   // boshqa sahifalar uchun nomlash to'g'riroq qilish mumkin
   return seg.charAt(0).toUpperCase() + seg.slice(1);
 });
+
+
 </script>
 
 <style scoped>

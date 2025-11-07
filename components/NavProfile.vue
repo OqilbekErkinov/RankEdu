@@ -172,7 +172,7 @@
             <div class="mt-2">
               <button
                 class="btn btn-light w-100 py-3 rounded-4 d-flex align-items-center gap-2 justify-content-start"
-                @click="logout"
+                 @click="logoutHandler"
               >
                 <i class="bi bi-box-arrow-right fs-5"></i>
                 <span class="fw-semibold">Chiqish</span>
@@ -332,6 +332,15 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("click", onDocClick);
 });
+
+
+const auth = useAuth()
+const router = useRouter()
+
+function logoutHandler() {
+  auth.logout()
+  router.push('/signin')
+}
 </script>
 
 <style scoped>
