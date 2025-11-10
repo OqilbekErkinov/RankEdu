@@ -14,7 +14,7 @@
         <button
           class="btn btn-outline-secondary"
           type="button"
-          @click="goSignup"
+          @click="goToSignup"
         >
           Roʻyxatdan oʻtish
         </button>
@@ -24,60 +24,52 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
+import useAuth from "~/composables/useAuth";
 import { useRouter } from "vue-router";
-import { useAuth } from "~/composables/useAuth"; // sizning composable joylashuvingizga moslang
 
-const router = useRouter();
 const auth = useAuth();
+const router = useRouter();
 
 const email = ref("");
 const password = ref("");
 const loading = ref(false);
-const err = ref(null);
+const err = ref<string | null>(null);
 
-function goSignup() {
-  router.push("/signup");
-}
+onMounted(async () => {
+  await auth.init();
+  // agar foydalanuvchi allaqachon kirgan bo'lsa, indexga yubor
+  if (auth.user.value) {
+    router.push("/");
+  }
+});
 
 async function onSubmit() {
   err.value = null;
   loading.value = true;
   try {
-    await auth.login({ email: email.value, password: password.value });
-    // muvaffaqiyat: yo'naltirish
-    window.location.href = "/profile";
-  } catch (e) {
-    // e obyektida Supabase xabar bo'lishi mumkin
-    const msg =
-      e && (e.message || e.error_description)
-        ? e.message || e.error_description
-        : String(e);
-    if (
-      typeof msg === "string" &&
-      msg.toLowerCase().includes("email not confirmed")
-    ) {
-      err.value = "Email tasdiqlanmagan. Iltimos emailingizni tekshiring.";
-    } else if (
-      typeof msg === "string" &&
-      (msg.toLowerCase().includes("invalid login") ||
-        msg.toLowerCase().includes("invalid login credentials"))
-    ) {
-      err.value = "Email yoki parol noto‘g‘ri.";
-    } else {
-      err.value = msg;
+    const res = await auth.login({
+      email: email.value,
+      password: password.value,
+    });
+    // res ga qarab email tasdiqlanganmi yoki boshqa xatolik borligini tekshirish mumkin
+    if (res.error) {
+      err.value = res.error.message || "Login xatosi";
+      return;
     }
+    // muvaffaqiyatli bo'lsa
+    router.push("/profile");
+  } catch (e: any) {
+    err.value = e?.message || String(e);
   } finally {
     loading.value = false;
   }
 }
 
-onMounted(() => {
-  if (typeof auth.init === "function") {
-    auth.init().catch(() => {});
-  }
-});
+function goToSignup() {
+  router.push("/signup");
+}
 </script>
 
 <style scoped>

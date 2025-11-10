@@ -31,7 +31,7 @@
               class="d-flex align-items-center gap-2 text-warning fw-semibold"
             >
               <i class="bi bi-star-fill"></i>
-              <span>{{ formatNumber(user.totalXp) }} XP</span>
+              <span>{{ formatNumber(user.xp || 0) }} XP</span>
             </div>
           </div>
 
@@ -39,9 +39,15 @@
             <div class="progress prog-thin">
               <div
                 class="progress-bar bg-warning"
-                :style="{ width: progressPercent + '%' }"
+                :style="{ width: overallPercent + '%' }"
               ></div>
             </div>
+            <!-- <div class="progress prog-thin">
+              <div
+                class="progress-bar bg-warning"
+                :style="{ width: progressPercent + '%' }"
+              ></div>
+            </div> -->
             <div class="d-flex justify-content-between small text-muted mt-1">
               <span
                 >{{ formatNumber(xpToNext) }} XP to Level
@@ -51,11 +57,10 @@
           </div>
 
           <div class="mt-3 d-grid">
-            <button class="btn btn-outline-danger" @click="clearProfile">
+            <button class="btn btn-outline-danger" @click="removeAvatar">
               Profil rasmini o'chirish
             </button>
           </div>
-
         </div>
       </div>
 
@@ -64,6 +69,7 @@
         <div class="card border-0 shadow-sm p-4 position-relative">
           <button
             class="btn btn-light border position-absolute top-3 end-3 rounded-3"
+            style="right: 1.4rem"
             @click="openEditProfile"
           >
             Edit Profile
@@ -96,13 +102,13 @@
                 </div>
                 <div>
                   <div class="fw-semibold fs-5 text-warning">
-                    {{ formatNumber(user.totalXp) }} XP
+                    {{ formatNumber(user.xp || 0) }} XP
                   </div>
                   <div class="small text-muted">Total Experience</div>
                 </div>
                 <div>
                   <div class="fw-semibold fs-5 text-warning">
-                    #{{ user.globalRank }}
+                    #{{ user.globalRank || "-" }}
                   </div>
                   <div class="small text-muted">Global Rank</div>
                 </div>
@@ -119,7 +125,7 @@
             </div>
             <div class="d-flex justify-content-end small text-muted mt-1">
               <span
-                >{{ formatNumber(user.totalXp) }} /
+                >{{ formatNumber(user.xp || 0) }} /
                 {{ formatNumber(MAX_TOTAL_XP) }}</span
               >
             </div>
@@ -130,11 +136,8 @@
         <div
           class="d-flex align-items-center justify-content-between mt-4 mb-2"
         >
-          <h5 class="mb-0">
-            Badges & Achievements ({{ achievements.length }})
-          </h5>
+          <h5 class="mb-0">Badges & Achievements ({{ badges.length }})</h5>
           <div>
-
             <button class="btn btn-primary" @click="openAddAchievement">
               Yutuq qo'shish
             </button>
@@ -144,12 +147,12 @@
         <!-- Achievements list -->
         <div class="card border-0 shadow-sm p-3">
           <div class="row g-3">
-            <div v-if="achievements.length === 0" class="col-12">
+            <div v-if="badges.length === 0" class="col-12">
               <div class="text-muted">Hozircha yutuq topilmadi.</div>
             </div>
 
             <div
-              v-for="a in achievements"
+              v-for="a in badges"
               :key="a.id"
               class="col-6 col-md-4 col-lg-3"
             >
@@ -157,15 +160,15 @@
                 <div class="badge-icon small">{{ a.icon || "🏅" }}</div>
                 <div class="fw-semibold text-center mt-2">{{ a.title }}</div>
                 <div class="small text-center text-muted mt-1">
-                  {{ a.metaLine }}
+                  {{ a.metaLine || a.code }}
                 </div>
                 <div class="text-center mt-2">
-                  <span class="pill" :class="a.tierClass">{{
-                    a.tierLabel
+                  <span class="pill" :class="tierClass(a.xp_count)">{{
+                    tierLabel(a.xp_count)
                   }}</span>
                 </div>
                 <div class="small text-muted text-center mt-1">
-                  {{ formatDate(a.date) }}
+                  {{ formatDate(a.created_at) }}
                 </div>
 
                 <div class="d-flex gap-2 mt-3">
@@ -183,8 +186,8 @@
                   </button>
                 </div>
 
-                <div v-if="a.proofUrl" class="mt-2 text-center">
-                  <a :href="a.proofUrl" target="_blank" class="small"
+                <div v-if="a.proof_url" class="mt-2 text-center">
+                  <a :href="a.proof_url" target="_blank" class="small"
                     >Isbotni ko'rish</a
                   >
                 </div>
@@ -193,25 +196,16 @@
                   class="xp-badge position-absolute"
                   title="this achievement XP"
                 >
-                  +{{ formatNumber(a.xp) }}
+                  +{{ formatNumber(a.xp_count || 0) }}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- placeholder -->
-        <div class="mt-4">
-          <div class="card border-0 shadow-sm p-4">
-            <div class="text-muted">
-              Keyingi bo‘limlar bu yerda paydo bo‘ladi.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Edit Profile Modal (dark themed like stipend modal) -->
+    <!-- Edit Profile Modal (dark themed) -->
     <div
       class="modal fade"
       id="editProfileModal"
@@ -284,19 +278,6 @@
                   O'chirish
                 </button>
               </div>
-            </div>
-
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                v-model="editProfileForm.resetXpConfirm"
-                id="resetXp"
-              />
-              <label class="form-check-label" for="resetXp"
-                >Agar belgilanadigan bo'lsa, XP va level ni 0 qilib
-                qo'yish</label
-              >
             </div>
           </div>
 
@@ -646,82 +627,43 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted, watch } from "vue";
+import { ref, reactive, computed, onMounted, watch } from "vue";
+import { useNuxtApp } from "#app";
+import useAuth from "@/composables/useAuth";
 
-/* --------------- STORAGE KEYS --------------- */
-const STORAGE_USER = "rankedu_user_v2";
-const STORAGE_ACH = "rankedu_achievements_v2";
-
-/* --------------- DEFAULTS --------------- */
-const defaultUser = {
-  fullname: "Erkinov Oqilbek Alisher o`g`li",
-  universityShort: "TIFT",
-  universityFull:
-    "Toshkent xalqaro moliyaviy boshqaruv va texnalogiyalar universtiteti",
-  major: "Menejment",
-  totalXp: 0,
-  globalRank: 12,
-  avatar: null, // base64 string
-};
-
-/* --------------- UTIL: localStorage load/save --------------- */
-function loadUser() {
-  try {
-    const raw = localStorage.getItem(STORAGE_USER);
-    return raw ? JSON.parse(raw) : defaultUser;
-  } catch {
-    return defaultUser;
-  }
-}
-function saveUser(u) {
-  try {
-    localStorage.setItem(STORAGE_USER, JSON.stringify(u));
-  } catch {}
-}
-const loadAchievements = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_ACH);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
-
-/* --------------- REACTIVE STATE --------------- */
-const user = reactive(loadUser());
-const achievements = ref(loadAchievements());
-
-watch(user, (v) => saveUser(v), { deep: true });
-watch(
-  achievements,
-  (v) => localStorage.setItem(STORAGE_ACH, JSON.stringify(v)),
-  { deep: true }
-);
-
-/* --------------- XP / LEVEL RULES --------------- */
-const XP_PER_LEVEL = 100; // 100 XP = 1 level
+/* CONFIG */
+const XP_PER_LEVEL = 100;
 const MAX_LEVEL = 100;
-const MAX_TOTAL_XP = XP_PER_LEVEL * MAX_LEVEL; // 10000
-const MAX_TOTAL_XP_CONST = MAX_TOTAL_XP;
-const MAX_TOTAL_XP_LABEL = formatNumber(MAX_TOTAL_XP);
+const MAX_TOTAL_XP = XP_PER_LEVEL * MAX_LEVEL;
 
-/* expose to template */
-// const MAX_TOTAL_XP = MAX_TOTAL_XP_CONST; 
+/* Supabase + auth */
+const { $supabase } = useNuxtApp();
+const auth = useAuth();
+
+/* STATE */
+const user = reactive({
+  user_id: null,
+  fullname: "",
+  universityShort: "",
+  universityFull: "",
+  major: "",
+  xp: 0,
+  globalRank: null,
+  avatar: null,
+});
+
+const badges = ref([]);
 
 /* computed */
-const levelComputed = computed(() =>
-  Math.floor((user.totalXp || 0) / XP_PER_LEVEL)
-);
-const xpProgress = computed(() => (user.totalXp || 0) % XP_PER_LEVEL);
+const levelComputed = computed(() => Math.floor((user.xp || 0) / XP_PER_LEVEL));
+const xpProgress = computed(() => (user.xp || 0) % XP_PER_LEVEL);
 const progressPercent = computed(() =>
   Math.round((xpProgress.value / XP_PER_LEVEL) * 100)
 );
 const overallPercent = computed(() =>
-  Math.round(((user.totalXp || 0) / MAX_TOTAL_XP) * 100)
+  Math.round(((user.xp || 0) / MAX_TOTAL_XP) * 100)
 );
 const xpToNext = computed(() => Math.max(0, XP_PER_LEVEL - xpProgress.value));
-
-/* initials */
 const initials = computed(() =>
   (user.fullname || "")
     .split(" ")
@@ -731,80 +673,19 @@ const initials = computed(() =>
     .toUpperCase()
 );
 
-/* helpers */
-function formatNumber(n) {
-  if (n === null || n === undefined) return "0";
-  if (typeof n === "number" && Number.isFinite(n)) return n.toLocaleString();
-  const parsed = Number(n);
-  if (!Number.isNaN(parsed)) return parsed.toLocaleString();
-  return String(n);
-}
-function formatDate(ts) {
-  if (!ts) return "";
-  return new Date(ts).toLocaleDateString();
-}
-
-/* --------------- EDIT PROFILE modal --------------- */
+/* modals/forms */
 const editProfileModalRef = ref(null);
 let bsEditModal = null;
 const editProfileForm = reactive({
-  fullname: user.fullname,
-  universityShort: user.universityShort,
-  universityFull: user.universityFull,
-  major: user.major,
+  fullname: "",
+  universityShort: "",
+  universityFull: "",
+  major: "",
   resetXpConfirm: false,
+  avatarFile: null,
 });
 
-/* open/save/remove avatar */
-function openEditProfile() {
-  editProfileForm.fullname = user.fullname;
-  editProfileForm.universityShort = user.universityShort;
-  editProfileForm.universityFull = user.universityFull;
-  editProfileForm.major = user.major;
-  editProfileForm.resetXpConfirm = false;
-  if (bsEditModal) bsEditModal.show();
-}
-function saveProfile() {
-  if (!editProfileForm.fullname.trim()) {
-    alert("To'liq ism kiriting");
-    return;
-  }
-  user.fullname = editProfileForm.fullname.trim();
-  user.universityShort = editProfileForm.universityShort.trim();
-  user.universityFull = editProfileForm.universityFull.trim();
-  user.major = editProfileForm.major.trim();
-  if (editProfileForm.resetXpConfirm) {
-    user.totalXp = 0;
-  }
-  if (bsEditModal) bsEditModal.hide();
-  saveUser(user);
-}
-
-function onAvatarSelected(e) {
-  const f = e.target.files && e.target.files[0];
-  if (!f) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    user.avatar = reader.result;
-    saveUser(user);
-  };
-  reader.readAsDataURL(f);
-}
-function removeAvatar() {
-  if (!confirm("Profil rasmini o'chirishni tasdiqlaysizmi?")) return;
-  user.avatar = null;
-  saveUser(user);
-}
-function clearProfile() {
-  // only avatar clear action
-  if (!user.avatar) {
-    alert("Rasm yo'q");
-    return;
-  }
-  removeAvatar();
-}
-
-/* --------------- ACHIEVEMENTS modal & logic --------------- */
+/* Achievement modal data (merged full fields) */
 const categories = [
   { key: "international_cert", label: "Xalqaro sertifikat (IELTS, TOEFL...)" },
   { key: "national_cert", label: "Milliy sertifikat" },
@@ -854,12 +735,248 @@ const achForm = reactive({
   note: "",
   proofFile: null,
   proofUrl: null,
+  code: "",
+  xp: 0,
+  meta: {},
 });
 
 const step = ref(1);
 const achievementModalRef = ref(null);
 let bsAchievementModal = null;
 
+/* helpers */
+function formatNumber(n) {
+  if (n === null || n === undefined) return "0";
+  return Number(n).toLocaleString();
+}
+function formatDate(ts) {
+  if (!ts) return "";
+  return new Date(ts).toLocaleDateString();
+}
+function tierLabel(xp) {
+  if (!xp) return "—";
+  if (xp >= 2000) return "gold";
+  if (xp >= 1000) return "silver";
+  return "bronze";
+}
+function tierClass(xp) {
+  if (!xp) return "bronze";
+  if (xp >= 2000) return "gold";
+  if (xp >= 1000) return "silver";
+  return "bronze";
+}
+
+/* ---------- DB: load profile & badges ---------- */
+async function loadProfile(userId) {
+  if (!userId) return;
+  try {
+    const { data, error } = await $supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    if (!error && data) {
+      user.user_id = data.user_id ?? data.userId ?? userId;
+      user.fullname = data.fullname ?? data.full_name ?? "";
+      user.universityShort =
+        data.university_short ?? data.universityShort ?? "";
+      user.universityFull = data.university_full ?? data.universityFull ?? "";
+      user.major = data.major ?? "";
+      // server xp (may be 0) — will be compared with badges sum later
+      user.xp = data.xp ?? data.total_xp ?? 0;
+      user.globalRank = data.global_rank ?? data.globalRank ?? null;
+      user.avatar = data.avatar_url ?? data.avatarUrl ?? data.avatar ?? null;
+    } else {
+      // fallback: auth metadata
+      const res = await $supabase.auth.getUser();
+      const u = res?.data?.user;
+      if (u) {
+        user.user_id = user.user_id || u.id;
+        user.fullname = user.fullname || u.user_metadata?.full_name || "";
+        user.avatar = user.avatar || u.user_metadata?.avatar_url || null;
+      }
+    }
+  } catch (e) {
+    console.error("loadProfile exception:", e);
+  }
+}
+
+/**
+ * updateGlobalRank(userId)
+ * - olgan profilingizni hamma profil xp bo'yicha kamayish tartibida olib,
+ *   joriy foydalanuvchining rankini hisoblaydi va user.globalRank ga o'rnatadi.
+ */
+async function updateGlobalRank(userId) {
+  if (!userId) return;
+  try {
+    const { data, error } = await $supabase
+      .from("profiles")
+      .select("user_id, xp")
+      .order("xp", { ascending: false });
+
+    if (!error && Array.isArray(data)) {
+      // topdan pastga qarab index topamiz (1-based rank)
+      const idx = data.findIndex((p) => (p.user_id || p.userId) === userId);
+      user.globalRank = idx === -1 ? null : idx + 1;
+    } else {
+      if (error) console.warn("updateGlobalRank error:", error);
+      user.globalRank = null;
+    }
+  } catch (e) {
+    console.error("updateGlobalRank exception:", e);
+    user.globalRank = null;
+  }
+}
+
+/**
+ * loadBadges(userId)
+ * - badges ni yuklaydi, badgesSum (jamiy xp) hisoblaydi
+ * - user.xp ga: Math.max(serverXp, badgesSum) qilib o'rnatadi
+ * - global rankni yangilaydi
+ */
+async function loadBadges(userId) {
+  if (!userId) return;
+  try {
+    const { data, error } = await $supabase
+      .from("badges")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (!error && Array.isArray(data)) {
+      badges.value = data.map((b) => ({
+        ...b,
+        metaLine:
+          (b.meta &&
+            typeof b.meta === "object" &&
+            (b.meta.label || b.meta.title)) ||
+          "",
+      }));
+
+      // compute sum of xp from badges
+      const badgesSum = badges.value.reduce((s, it) => {
+        const n = Number(it.xp_count || it.xp || 0);
+        return s + (isNaN(n) ? 0 : n);
+      }, 0);
+
+      // keep server xp if server xp is larger, else use badgesSum
+      // this ensures frontend shows correct aggregated xp
+      const serverXp = user.xp || 0;
+      user.xp = Math.max(serverXp, badgesSum);
+
+      // update global rank after badges/profile loaded
+      await updateGlobalRank(userId);
+    } else {
+      badges.value = [];
+      if (error) console.warn("loadBadges error:", error);
+      // ensure rank reset if no badges
+      await updateGlobalRank(userId);
+    }
+  } catch (e) {
+    console.error("loadBadges exception:", e);
+    badges.value = [];
+  }
+}
+
+/* ---------- profile edit ---------- */
+function openEditProfile() {
+  editProfileForm.fullname = user.fullname || "";
+  editProfileForm.universityShort = user.universityShort || "";
+  editProfileForm.universityFull = user.universityFull || "";
+  editProfileForm.major = user.major || "";
+  editProfileForm.resetXpConfirm = false;
+  if (bsEditModal) bsEditModal.show();
+}
+function onAvatarSelected(e) {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  editProfileForm.avatarFile = f;
+  const reader = new FileReader();
+  reader.onload = () => {
+    user.avatar = reader.result;
+  };
+  reader.readAsDataURL(f);
+}
+function removeAvatar() {
+  if (!confirm("Profil rasmini o'chirishni tasdiqlaysizmi?")) return;
+  user.avatar = null;
+}
+
+/* robust upsert helper (keeps behavior if schema different) */
+async function tryUpsertWithFallback(payload) {
+  try {
+    const { data, error } = await $supabase
+      .from("profiles")
+      .upsert(payload, { onConflict: ["user_id"] })
+      .select()
+      .single();
+    return { data, error };
+  } catch (e) {
+    return { data: null, error: e };
+  }
+}
+
+async function saveProfile() {
+  if (!editProfileForm.fullname || !editProfileForm.fullname.trim()) {
+    alert("To'liq ism kiriting");
+    return;
+  }
+
+  let uid = auth?.user?.value?.id;
+  if (!uid) {
+    try {
+      const res = await $supabase.auth.getUser();
+      uid = res?.data?.user?.id;
+      if (!uid) {
+        alert("Foydalanuvchi tizimga kirmagan");
+        return;
+      }
+    } catch (e) {
+      console.error("Could not get auth user:", e);
+      alert("Foydalanuvchi topilmadi");
+      return;
+    }
+  }
+
+  const newXp = editProfileForm.resetXpConfirm ? 0 : user.xp || 0;
+  const avatar_url = user.avatar || null;
+
+  const payload = {
+    user_id: uid,
+    fullname: editProfileForm.fullname || null,
+    university_short: editProfileForm.universityShort || null,
+    university_full: editProfileForm.universityFull || null,
+    major: editProfileForm.major || null,
+    avatar_url,
+    xp: newXp,
+  };
+
+  try {
+    const { data, error } = await $supabase
+      .from("profiles")
+      .upsert(payload, { onConflict: "user_id" })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Profile upsert error", error);
+      alert("Profilni saqlashda xato: " + (error.message || error));
+      return;
+    }
+
+    await loadProfile(uid);
+    // after loading profile, recompute using badges (to ensure consistency)
+    await loadBadges(uid);
+
+    if (bsEditModal) bsEditModal.hide();
+  } catch (e) {
+    console.error("saveProfile exception:", e);
+    alert("Profilni saqlashda xato");
+  }
+}
+
+/* ---------- Achievements modal logic (merged) ---------- */
 function openAddAchievement() {
   resetAchForm();
   step.value = 1;
@@ -869,14 +986,17 @@ function openAddAchievement() {
 function editAchievement(a) {
   achForm.editing = true;
   achForm.id = a.id;
-  achForm.category = a.category;
-  achForm.sub = a.sub;
-  achForm.subCustom = a.subCustom || "";
-  achForm.level = a.level;
-  achForm.levelCustom = a.levelCustom || "";
-  achForm.title = a.title;
+  achForm.category = a.category || null;
+  // try to map meta to sub/level/title if present
+  achForm.sub = a.sub || null;
+  achForm.subCustom = a.subCustom || a.meta?.sub || "" || "";
+  achForm.level = a.level || null;
+  achForm.levelCustom = a.levelCustom || a.meta?.level || "" || "";
+  achForm.title = a.title || "";
   achForm.note = a.note || "";
-  achForm.proofUrl = a.proofUrl || null;
+  achForm.proofUrl = a.proof_url || null;
+  achForm.code = a.code || "";
+  achForm.xp = a.xp_count || 0;
   step.value = 2;
   if (bsAchievementModal) bsAchievementModal.show();
 }
@@ -892,9 +1012,13 @@ function resetAchForm() {
   achForm.note = "";
   achForm.proofFile = null;
   achForm.proofUrl = null;
+  achForm.code = "";
+  achForm.xp = 0;
+  achForm.meta = {};
+  step.value = 1;
 }
-function selectCategory(key) {
-  achForm.category = key;
+function selectCategory(k) {
+  achForm.category = k;
   achForm.sub = null;
   achForm.subCustom = "";
   achForm.level = null;
@@ -910,7 +1034,8 @@ function nextStep() {
     return;
   }
   if (step.value === 2) {
-    if (!achForm.title && !achForm.sub && !achForm.subCustom) {
+    // for categories that require either title or sub
+    if (!achForm.title && !achForm.sub && !achForm.subCustom && !achForm.code) {
       alert("Kamida bir nom yoki sub-kategoriya kiriting.");
       return;
     }
@@ -931,8 +1056,9 @@ function onProofSelected(e) {
   }
 }
 
-/* --------------- XP MAPPING (original large numbers) --------------- */
+/* XP mapping (same logic as old code) */
 function computeXpFromForm(form) {
+  if (!form || !form.category) return 0;
   if (form.category === "international_cert") {
     const level = (form.levelCustom || form.level || "")
       .toString()
@@ -955,7 +1081,7 @@ function computeXpFromForm(form) {
       winner2: 700,
       winner3: 400,
       participant: 100,
-    }; // adapted to large scale in examples
+    };
 
     if (type === "hackathon") return resMap[res] || 100;
     if (type === "museum") return 100;
@@ -977,118 +1103,147 @@ function computeXpFromForm(form) {
   }
   return 0;
 }
-
-const previewXp = computed(() => computeXpFromForm(achForm));
+const previewXp = computed(() => {
+  // if user manually filled xp (achForm.xp) prefer that, else compute
+  const manual = achForm.xp || 0;
+  const computed = computeXpFromForm(achForm);
+  return manual || computed;
+});
 
 function uid() {
   return "a_" + Math.random().toString(36).slice(2, 9);
 }
 
-function submitAchievement() {
-  if (!achForm.category) {
-    alert("Kategoriya tanlanmagan");
+async function submitAchievement() {
+  const uid = auth?.user?.value?.id;
+  if (!uid) {
+    alert("Foydalanuvchi topilmadi");
     return;
   }
-  const xp = computeXpFromForm(achForm);
-  const subName = achForm.subCustom || achForm.sub || "";
-  const levelName = achForm.levelCustom || achForm.level || "";
-  const metaLine = [subName, levelName].filter(Boolean).join(" • ");
 
-  if (achForm.editing) {
-    const idx = achievements.value.findIndex((x) => x.id === achForm.id);
-    if (idx !== -1) {
-      const oldXp = achievements.value[idx].xp || 0;
-      achievements.value[idx] = {
-        ...achievements.value[idx],
-        category: achForm.category,
-        sub: achForm.sub,
-        subCustom: achForm.subCustom,
-        level: achForm.level,
-        levelCustom: achForm.levelCustom,
-        title: achForm.title || (subName ? `${subName} ${levelName}` : "Yutuq"),
-        metaLine,
-        note: achForm.note,
-        proofUrl: achForm.proofUrl,
-        xp,
-        date: Date.now(),
-      };
-      // adjust totalXp delta
-      user.totalXp = Math.max(0, (user.totalXp || 0) - (oldXp || 0) + xp);
-    }
-  } else {
-    const newAch = {
-      id: uid(),
-      category: achForm.category,
-      sub: achForm.sub,
-      subCustom: achForm.subCustom,
-      level: achForm.level,
-      levelCustom: achForm.levelCustom,
-      title: achForm.title || (subName ? `${subName} ${levelName}` : "Yutuq"),
-      metaLine,
-      note: achForm.note,
-      proofUrl: achForm.proofUrl,
-      xp,
-      date: Date.now(),
-      icon: "🏅",
-      tierLabel: achForm.levelCustom || achForm.level || (xp ? `+${xp}` : "—"),
-      tierClass: xp >= 2000 ? "gold" : xp >= 1000 ? "silver" : "bronze",
-    };
-    achievements.value.unshift(newAch);
+  // prepare fields
+  const chosenSub = achForm.subCustom || achForm.sub || "";
+  const chosenLevel = achForm.levelCustom || achForm.level || "";
+  const xpAuto = computeXpFromForm(achForm);
+  const xpToSave = achForm.xp || xpAuto || 0; // if user provided xp override
+  const payload = {
+    user_id: uid,
+    code: achForm.code || `auto_${Date.now()}`,
+    title:
+      achForm.title || (chosenSub ? `${chosenSub} ${chosenLevel}` : "Yutuq"),
+    xp_count: xpToSave,
+    meta: {
+      sub: achForm.sub || null,
+      subCustom: achForm.subCustom || null,
+      level: achForm.level || null,
+      levelCustom: achForm.levelCustom || null,
+      category: achForm.category || null,
+      note: achForm.note || null,
+    },
+    proof_url: achForm.proofUrl || null,
+    category: achForm.category || null,
+  };
 
-    // add xp to user.totalXp (va level automatik hisoblanadi)
-    user.totalXp = (user.totalXp || 0) + xp;
-    // clamp to reasonable max so progress bar works
-    if (user.totalXp > MAX_TOTAL_XP) {
-      // allow > MAX_TOTAL_XP, but for display clamp? we keep value but overallPercent uses MAX_TOTAL_XP denominator
+  try {
+    if (achForm.editing && achForm.id) {
+      const { data, error } = await $supabase
+        .from("badges")
+        .update(payload)
+        .eq("id", achForm.id)
+        .select()
+        .single();
+      if (error) {
+        console.error("Update badge error", error);
+        alert("Yutuqni tahrirlashda xato");
+        return;
+      }
+      // reload badges and profile
+      await loadBadges(uid);
+      await loadProfile(uid);
+    } else {
+      const { data, error } = await $supabase
+        .from("badges")
+        .insert([payload])
+        .select()
+        .single();
+      if (error) {
+        console.error("Insert badge error", error);
+        alert("Yutuq qo'shishda xato");
+        return;
+      }
+      // reload badges and profile (profile xp may be recalculated on server or we handle client-side)
+      await loadBadges(uid);
+      await loadProfile(uid);
     }
+    if (bsAchievementModal) bsAchievementModal.hide();
+    resetAchForm();
+  } catch (e) {
+    console.error("submitAchievement exception:", e);
+    alert("Yutuq qo'shishda xato");
   }
-
-  if (bsAchievementModal) bsAchievementModal.hide();
-  resetAchForm();
 }
 
-/* delete achievement */
-function deleteAchievement(id) {
+async function deleteAchievement(id) {
   if (!confirm("Yutuqni o'chirishni tasdiqlaysizmi?")) return;
-  const idx = achievements.value.findIndex((x) => x.id === id);
-  if (idx !== -1) {
-    const xp = achievements.value[idx].xp || 0;
-    achievements.value.splice(idx, 1);
-    user.totalXp = Math.max(0, (user.totalXp || 0) - xp);
+  try {
+    const { error } = await $supabase.from("badges").delete().eq("id", id);
+    if (error) {
+      console.error("Delete badge error", error);
+      alert("O'chirishda xato");
+      return;
+    }
+    const uid = auth?.user?.value?.id;
+    await loadBadges(uid);
+    await loadProfile(uid);
+  } catch (e) {
+    console.error("deleteAchievement exception:", e);
+    alert("O'chirishda xato");
   }
 }
 
-/* export */
-function exportAchievements() {
-  const data = JSON.stringify(achievements.value, null, 2);
-  const blob = new Blob([data], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "achievements.json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-/* ----------------- INIT BOOTSTRAP MODALS & DARK THEME ----------------- */
+/* lifecycle */
 onMounted(async () => {
   if (typeof window === "undefined") return;
   const { Modal } = await import("bootstrap");
-
-  if (editProfileModalRef.value) {
+  if (editProfileModalRef.value)
     bsEditModal = new Modal(editProfileModalRef.value);
-    // ensure dark-modal class present on modal-content (we set in template already),
-    // add event listeners for backdrop blur if needed
-  }
-  if (achievementModalRef.value) {
+  if (achievementModalRef.value)
     bsAchievementModal = new Modal(achievementModalRef.value, {
       backdrop: "static",
     });
+
+  // watch auth user
+  watch(
+    () => auth.user?.value?.id,
+    async (id) => {
+      if (id) {
+        await loadProfile(id);
+        await loadBadges(id);
+      } else {
+        user.user_id = null;
+        user.fullname = "";
+        user.universityShort = "";
+        user.universityFull = "";
+        user.major = "";
+        user.xp = 0;
+        user.avatar = null;
+        user.globalRank = null;
+        badges.value = [];
+      }
+    },
+    { immediate: true }
+  );
+
+  const uid = auth?.user?.value?.id;
+  if (uid) {
+    await loadProfile(uid);
+    await loadBadges(uid);
   }
 });
 </script>
 
 <style scoped>
+/* (styles unchanged, kept as in original) */
 .profile-page {
 }
 
@@ -1230,7 +1385,7 @@ onMounted(async () => {
   font-size: 12px;
 }
 
-/* Modal dark theme (stpendiya-like) */
+/* Modal dark theme */
 .dark-modal {
   background: linear-gradient(
     180deg,
@@ -1247,7 +1402,7 @@ onMounted(async () => {
   filter: invert(1) brightness(2);
 }
 .dark-modal .btn {
-color: #ffffff;
+  color: #ffffff;
 }
 .dark-modal .form-control {
   background: rgba(255, 255, 255, 0.05);

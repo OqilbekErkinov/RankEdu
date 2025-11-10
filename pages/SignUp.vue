@@ -24,6 +24,7 @@
           />
         </div>
       </div>
+
       <div class="d-flex gap-2">
         <button class="btn btn-primary" :disabled="loading">
           Roʻyxatdan oʻtish
@@ -31,48 +32,47 @@
         <button
           class="btn btn-outline-secondary"
           type="button"
-          @click="goSignin"
+          @click="goToSignin"
         >
-          Kirish
+          Sign in
         </button>
       </div>
 
-      <div v-if="message" class="mt-2 text-success">{{ message }}</div>
-      <div v-if="err" class="mt-2 text-danger">{{ err }}</div>
+      <div v-if="err" class="text-danger mt-2">{{ err }}</div>
+      <div v-if="message" class="text-success mt-2">{{ message }}</div>
     </form>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
+import useAuth from "~/composables/useAuth";
 import { useRouter } from "vue-router";
-import { useAuth } from "~/composables/useAuth";
 
-const router = useRouter();
 const auth = useAuth();
+const router = useRouter();
 
 const fullname = ref("");
 const email = ref("");
 const phone = ref("");
 const password = ref("");
-const avatarPreview = ref(null);
-const avatarFile = ref(null);
+const avatarFile = ref<File | null>(null);
+const avatarPreview = ref<string | null>(null);
 const loading = ref(false);
-const err = ref(null);
-const message = ref(null);
+const err = ref<string | null>(null);
+const message = ref<string | null>(null);
 
-function goSignin() {
-  router.push("/signin");
-}
+onMounted(async () => {
+  await auth.init();
+  if (auth.user.value) router.push("/");
+});
 
-function onAvatar(e) {
-  const f = e.target.files && e.target.files[0];
+function onAvatar(e: Event) {
+  const f = (e.target as HTMLInputElement).files?.[0];
   if (!f) return;
   avatarFile.value = f;
   const reader = new FileReader();
-  reader.onload = () => {
-    avatarPreview.value = reader.result;
-  };
+  reader.onload = () => (avatarPreview.value = reader.result as string);
   reader.readAsDataURL(f);
 }
 
@@ -81,30 +81,36 @@ async function onSubmit() {
   message.value = null;
   loading.value = true;
   try {
-    await auth.register({
+    const res = await auth.register({
+      fullname: fullname.value,
       email: email.value,
+      phone: phone.value,
       password: password.value,
-      meta: { fullname: fullname.value, phone: phone.value },
+      avatarDataUrl: avatarPreview.value,
     });
-    // Confirmation sozlamasiga qarab — agar tasdiqlash kerak bo'lsa foydalanuvchiga xabar beramiz
+    // supabase signUp response
+    if (res.error) {
+      err.value = res.error.message || "Roʻyxatdan oʻtishda xato";
+      return;
+    }
+    // agar email tasdiqlash talab etilsa:
     message.value =
-      "Roʻyxatdan oʻtish muvaffaqiyatli. Iltimos emailingizni tekshirib tasdiqlang (agar tasdiqlash zarur bo‘lsa).";
-  } catch (e) {
-    const msg =
-      e && (e.message || e.error_description)
-        ? e.message || e.error_description
-        : String(e);
-    err.value = msg;
+      "Roʻyxatdan oʻtish muvaffaqiyatli. Iltimos emailingizni tekshirib tasdiqlang.";
+    // agar avtomatik login bo'lsa, supabase onAuthStateChange orqali user ga kirishi mumkin.
+    // Agar siz darhol profilga o'tmoqchi bo'lsangiz va foydalanuvchi session bo'lsa:
+    if (res.data?.session) {
+      router.push("/profile");
+    }
+  } catch (e: any) {
+    err.value = e?.message || String(e);
   } finally {
     loading.value = false;
   }
 }
 
-onMounted(() => {
-  if (typeof auth.init === "function") {
-    auth.init().catch(() => {});
-  }
-});
+function goToSignin() {
+  router.push("/signin");
+}
 </script>
 
 <style scoped>

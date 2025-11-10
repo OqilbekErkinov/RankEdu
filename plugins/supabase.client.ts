@@ -9,17 +9,17 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   if (!url || !anonKey) {
     console.warn("[supabase] Missing URL or ANON KEY in runtimeConfig.public");
-    return;
+    return {};
   }
 
   const supabase = createClient(url, anonKey, {
-    auth: {
-      persistSession: true,
-    },
+    auth: { persistSession: true },
   });
 
-  // Provide supabase as $supabase (nuxtApp.$supabase) — bitta yo'l bilan provayd qilamiz
+  // bitta usul — nuxtApp.provide bilan
   nuxtApp.provide("supabase", supabase);
 
-  // note: do NOT return provide: { supabase } va ham nuxtApp.provide ishlatmang — bu conflict tugdiradi
+  // agar composition API da useNuxtApp().$supabase ishlatmoqchi bo‘lsangiz:
+  // Object.defineProperty orqali ham qilinadi, lekin oddiy provide yetarli.
+  return {};
 });

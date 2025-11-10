@@ -1,6 +1,5 @@
 <template>
   <div class="navprofile-wrap position-relative" ref="wrap">
-    <!-- Trigger avatar -->
     <button
       class="btn p-0 bg-transparent border-0"
       @click="toggle"
@@ -23,10 +22,9 @@
           <i class="bi bi-x-lg"></i>
         </button>
 
-        <!-- Header (fixed part) -->
         <div class="panel-header text-center px-4 pt-2">
-          <div class="phone ">{{ profile.phoneDisplay }}</div>
-          <div class="avatar-wrap mx-auto ">
+          <div class="phone">{{ profile.phoneDisplay }}</div>
+          <div class="avatar-wrap mx-auto">
             <img
               :src="profile.avatar || defaultAvatar"
               alt="avatar"
@@ -37,7 +35,7 @@
             {{ profile.fullname || "Foydalanuvchi Ismi" }}
           </div>
           <div class="text-muted small">
-            {{ profile.email || "email@misol.uz" }}
+            {{ profile.email || userEmail || "email@misol.uz" }}
           </div>
 
           <div class="tabs d-flex gap-2 mt-1 justify-content-center">
@@ -65,10 +63,8 @@
           </div>
         </div>
 
-        <!-- Scrollable content area -->
         <div class="panel-body">
           <div class="panel-content px-3 py-0">
-            <!-- SETTINGS -->
             <div v-if="tab === 'settings'">
               <form @submit.prevent="saveProfile">
                 <div class="">
@@ -82,12 +78,16 @@
                 </div>
 
                 <div class="">
-                  <label class="form-label small mb-0 pb-0">Elektron pochta</label>
+                  <label class="form-label small mb-0 pb-0"
+                    >Elektron pochta</label
+                  >
                   <input v-model="form.email" class="form-control" />
                 </div>
 
                 <div class="">
-                  <label class="form-label small mb-0 pb-0">Profil rasm (jpg/png)</label>
+                  <label class="form-label small mb-0 pb-0"
+                    >Profil rasm (jpg/png)</label
+                  >
                   <input
                     type="file"
                     class="form-control"
@@ -109,9 +109,12 @@
                   </button>
                 </div>
               </form>
+
+              <!-- <div class="mt-2 text-center small text-muted">
+                Badges: <strong>{{ badgesCount }}</strong>
+              </div> -->
             </div>
 
-            <!-- THEME -->
             <div v-if="tab === 'theme'">
               <div class="mb-2 small text-muted">Mavzuni tanlang</div>
               <div class="d-flex gap-2 flex-wrap mb-3">
@@ -140,7 +143,6 @@
               <div class="text-muted small">Tanlov brauzerda saqlanadi.</div>
             </div>
 
-            <!-- LANG -->
             <div v-if="tab === 'lang'">
               <div class="mb-2 small text-muted">Tilni tanlang</div>
               <div class="d-flex gap-2 mb-3">
@@ -168,11 +170,10 @@
               </div>
             </div>
 
-            <!-- bottom logout -->
             <div class="mt-2">
               <button
-                class="btn btn-light w-100 py-3 rounded-4 d-flex align-items-center gap-2 justify-content-start"
-                 @click="logoutHandler"
+                class="btn btn-light w-100 py-3 mb-3 rounded-4 d-flex align-items-center gap-2 justify-content-start"
+                @click="logoutHandler"
               >
                 <i class="bi bi-box-arrow-right fs-5"></i>
                 <span class="fw-semibold">Chiqish</span>
@@ -186,18 +187,27 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import {
+  ref,
+  reactive,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  computed,
+} from "vue";
+import { useRouter } from "vue-router";
+import { useNuxtApp } from "#app";
+import useAuth from "@/composables/useAuth";
 
 const defaultAvatar = "/images/default-avatar.png";
-
 const open = ref(false);
 const tab = ref("settings");
 const theme = ref("light");
 const lang = ref("uz");
-
 const wrap = ref(null);
 
 const profile = reactive({
+  user_id: null,
   fullname: "",
   phone: "",
   email: "",
@@ -217,13 +227,24 @@ const form = reactive({
 
 const STORAGE_KEY = "nav_profile_v2";
 
-function toggle() {
-  open.value = !open.value;
-  if (open.value) {
-    syncFormFromProfile();
-  }
+const { $supabase } = useNuxtApp();
+const auth = useAuth();
+const router = useRouter();
+
+const userEmail = computed(() => auth?.user?.value?.email || "");
+const badgesCount = ref(0);
+
+function syncFormFromProfile() {
+  form.fullname = profile.fullname || "";
+  form.phone = profile.phone || "";
+  form.email = profile.email || "";
+  form.avatarPreview = profile.avatar || null;
 }
 
+function toggle() {
+  open.value = !open.value;
+  if (open.value) syncFormFromProfile();
+}
 function setTab(t) {
   tab.value = t;
 }
@@ -252,12 +273,45 @@ function resetProfileImage() {
   saveToStorage();
 }
 
-function saveProfile() {
+async function saveProfile() {
   profile.fullname = form.fullname.trim();
   profile.phone = form.phone.trim();
   profile.email = form.email.trim();
   if (form.avatarPreview) profile.avatar = form.avatarPreview;
+
   saveToStorage();
+
+  const userId = auth?.user?.value?.id;
+  if (!userId) {
+    open.value = false;
+    return;
+  }
+
+  // Agar avatar faylni Supabase Storage ga yuklamoqchi bo'lsangiz, shu yerga yuklash kodini qo'shing
+  const payload = {
+    user_id: userId,
+    fullname: profile.fullname,
+    phone: profile.phone,
+    email: profile.email,
+    avatar_url: profile.avatar || null,
+  };
+
+  try {
+    const { data, error } = await $supabase
+      .from("profiles")
+      .upsert(payload, { onConflict: "user_id" })
+      .select()
+      .single();
+
+    if (error) {
+      console.warn("profile upsert error", error);
+    } else if (data) {
+      Object.assign(profile, data);
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
   open.value = false;
 }
 
@@ -271,26 +325,17 @@ function setTheme(t) {
   }
   saveToStorage();
 }
-
 function setLang(l) {
   lang.value = l;
   saveToStorage();
 }
 
-function logout() {
-  // real app: call auth logout
-  alert("Chiqish (demo)");
-  open.value = false;
+function logoutHandler() {
+  if (auth && auth.logout) auth.logout();
+  router.push("/signin");
 }
 
-function syncFormFromProfile() {
-  form.fullname = profile.fullname || "";
-  form.phone = profile.phone || "";
-  form.email = profile.email || "";
-  form.avatarPreview = profile.avatar || null;
-}
-
-/* localStorage safe functions */
+// localStorage
 function loadFromStorage() {
   try {
     if (typeof window === "undefined") return;
@@ -300,9 +345,7 @@ function loadFromStorage() {
     Object.assign(profile, parsed.profile || {});
     theme.value = parsed.theme || theme.value;
     lang.value = parsed.lang || lang.value;
-  } catch (e) {
-    /* ignore */
-  }
+  } catch (e) {}
 }
 
 function saveToStorage() {
@@ -310,6 +353,7 @@ function saveToStorage() {
     if (typeof window === "undefined") return;
     const payload = {
       profile: {
+        user_id: profile.user_id,
         fullname: profile.fullname,
         phone: profile.phone,
         email: profile.email,
@@ -319,31 +363,69 @@ function saveToStorage() {
       lang: lang.value,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (e) {}
+}
+
+// DB load
+async function loadProfileFromDb(userId) {
+  if (!userId) return;
+  try {
+    const { data, error } = await $supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+
+    if (!error && data) {
+      Object.assign(profile, data);
+    } else {
+      // fallback: set basic from auth
+      const { data: u } = await $supabase.auth.getUser();
+      if (u?.user) {
+        profile.email = profile.email || u.user.email;
+      }
+    }
   } catch (e) {
-    /* ignore */
+    console.error(e);
   }
+}
+
+async function loadBadgesCount(userId) {
+  if (!userId) return;
+  try {
+    const { count, error } = await $supabase
+      .from("badges")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    if (!error) badgesCount.value = count || 0;
+  } catch (e) {}
 }
 
 onMounted(() => {
   loadFromStorage();
   document.addEventListener("click", onDocClick);
+
+  // watch auth.user id
+  watch(
+    () => auth.user?.value?.id,
+    (id) => {
+      if (id) {
+        profile.user_id = id;
+        loadProfileFromDb(id);
+        loadBadgesCount(id);
+      }
+    },
+    { immediate: true }
+  );
 });
 
 onBeforeUnmount(() => {
   document.removeEventListener("click", onDocClick);
 });
-
-
-const auth = useAuth()
-const router = useRouter()
-
-function logoutHandler() {
-  auth.logout()
-  router.push('/signin')
-}
 </script>
 
 <style scoped>
+/* Original CSS kept: same as you provided */
 .avatar {
   width: 36px;
   height: 36px;
@@ -358,8 +440,6 @@ function logoutHandler() {
   border-radius: 50%;
   box-shadow: 0 6px 20px rgba(16, 24, 40, 0.08);
 }
-
-/* panel layout */
 .profile-panel {
   position: absolute;
   right: 0;
@@ -374,7 +454,6 @@ function logoutHandler() {
   overflow: hidden;
   z-index: 1050;
 }
-
 .panel-header {
   flex: 0 0 auto;
   padding-left: 24px;
@@ -392,8 +471,6 @@ function logoutHandler() {
   padding-top: 12px;
   padding-bottom: 16px;
 }
-
-/* tabs */
 .tab-btn {
   border-radius: 10px;
   border: 1px solid #dfe6f2;
@@ -406,8 +483,6 @@ function logoutHandler() {
   color: #fff;
   border-color: #0d6efd;
 }
-
-/* preview */
 .preview {
   width: 90px;
   height: 90px;
@@ -416,16 +491,12 @@ function logoutHandler() {
   border: 6px solid #fff;
   box-shadow: 0 6px 18px rgba(16, 24, 40, 0.12);
 }
-
-/* close */
 .profile-close {
   position: absolute;
   top: 12px;
   right: 12px;
   border-radius: 50%;
 }
-
-/* transition */
 .fade-scale-enter-active,
 .fade-scale-leave-active {
   transition: all 0.18s ease;
@@ -435,8 +506,6 @@ function logoutHandler() {
   opacity: 0;
   transform: translateY(-6px) scale(0.98);
 }
-
-/* responsive */
 @media (max-width: 520px) {
   .profile-panel {
     width: 92vw;
