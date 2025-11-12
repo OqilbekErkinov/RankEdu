@@ -1,33 +1,40 @@
-// middleware/auth.global.ts
-import { watch } from "vue";
+// /middleware/auth.global.js
+export default defineNuxtRouteMiddleware((to, from) => {
+  // public sahifalar – bu ro'yxatga kerak bo'lsa boshqa yo'llarni qo'shing
+  const publicPaths = ['/signin', '/signup', '/forgot', '/auth'];
 
-export default defineNuxtRouteMiddleware(async (to) => {
-  const auth = useAuth();
+  // agar to.path query param bilan kelgan bo'lsa ham faqat pathname tekshiriladi
+  const path = to.path || '';
 
-  // agar init hali chaqirilmagan bo'lsa, chaqiring
-  if (!auth.ready.value) {
-    await auth.init();
-    // agar init asenkron bo'lib, hali ham ready false bo'lsa, kutamiz
-    if (!auth.ready.value) {
-      await new Promise((res) => {
-        const unwatch = watch(auth.ready, (v) => {
-          if (v) {
-            unwatch();
-            res(true);
-          }
-        });
-      });
+  // useAuth composable loyihangizda mavjud bo'lsa shu orqali foydalanuvchini tekshiramiz
+  // agar siz boshqa composable ishlatsangiz nomini o'zgartiring
+  try {
+    const auth = useAuth();
+    const uid = auth?.user?.value?.id;
+
+    // agar foydalanuvchi login qilmagan va hozirgi path public emas — yo'naltir
+    if (!uid && !publicPaths.includes(path)) {
+      // agar allaqachon signin sahifasida bo'lsa return true (hech nima qilmasin)
+      return navigateTo('/signin');
     }
-  }
 
-  // foydalanuvchi mavjud bo'lsa va guest sahifalariga (signin/signup) kirmoqchi bo'lsa -> bosh sahifaga
-  if (auth.user.value && (to.path === "/signin" || to.path === "/signup")) {
-    return navigateTo("/");
-  }
+    // agar foydalanuvchi mavjud va signin/signup sahifalariga kirsa
+    // odatda bunday holatda dashboard yoki home ga yo'naltirish kerak bo'ladi
+    if (uid && (path === '/signin' || path === '/signup')) {
+      return navigateTo('/');
+    }
 
-  // himoyalangan routelar uchun misol
-  const protectedRoutes = ["/profile", "/dashboard"];
-  if (protectedRoutes.includes(to.path) && !auth.user.value) {
-    return navigateTo("/signin");
+    // hech qanday redirect kerak bo'lmasa davom etadi
+    return;
+  } catch (e) {
+    // agar useAuth topilmasa (kompozable nomi boshqacha) fallback: Supabase auth bilan tekshirish
+    try {
+      const { $supabase } = useNuxtApp();
+      // synchronous getUser ishlamaydi, lekin auth state odatda klientda mavjud
+      // xavfsiz fallback: agar to.path public bo'lmasa signin ga yo'naltir
+      if (!publicPaths.includes(path)) return navigateTo('/signin');
+    } catch (err) {
+      // agar hamma yo'q bo'lsa hech qilmaslik (dev muhitda test qiling)
+    }
   }
 });

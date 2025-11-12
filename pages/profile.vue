@@ -39,20 +39,14 @@
             <div class="progress prog-thin">
               <div
                 class="progress-bar bg-warning"
-                :style="{ width: overallPercent + '%' }"
-              ></div>
-            </div>
-            <!-- <div class="progress prog-thin">
-              <div
-                class="progress-bar bg-warning"
                 :style="{ width: progressPercent + '%' }"
               ></div>
-            </div> -->
+            </div>
             <div class="d-flex justify-content-between small text-muted mt-1">
-              <span
-                >{{ formatNumber(xpToNext) }} XP to Level
-                {{ levelComputed + 1 }}</span
-              >
+              <span>
+                {{ formatNumber(xpToNext) }} XP to Level
+                {{ levelComputed + 1 }}
+              </span>
             </div>
           </div>
 
@@ -124,10 +118,10 @@
               ></div>
             </div>
             <div class="d-flex justify-content-end small text-muted mt-1">
-              <span
-                >{{ formatNumber(user.xp || 0) }} /
-                {{ formatNumber(MAX_TOTAL_XP) }}</span
-              >
+              <span>
+                {{ formatNumber(user.xp || 0) }} /
+                {{ formatNumber(MAX_TOTAL_XP) }}
+              </span>
             </div>
           </div>
         </div>
@@ -163,9 +157,9 @@
                   {{ a.metaLine || a.code }}
                 </div>
                 <div class="text-center mt-2">
-                  <span class="pill" :class="tierClass(a.xp_count)">{{
-                    tierLabel(a.xp_count)
-                  }}</span>
+                  <span class="pill" :class="tierClass(a.xp_count)">
+                    {{ tierLabel(a.xp_count) }}
+                  </span>
                 </div>
                 <div class="small text-muted text-center mt-1">
                   {{ formatDate(a.created_at) }}
@@ -355,10 +349,9 @@
                 </button>
               </div>
               <div class="mt-3">
-                <small class="text-light"
-                  >Qayta tanlash uchun kategoriya ustiga qayta bossangiz
-                  yetadi.</small
-                >
+                <small class="text-light">
+                  Qayta tanlash uchun kategoriya ustiga qayta bossangiz yetadi.
+                </small>
               </div>
             </div>
 
@@ -606,16 +599,29 @@
                 >
                   Keyingi
                 </button>
+
+                <!-- Submit button: disabled during submitting with spinner -->
                 <button
                   v-else
                   class="btn btn-primary"
                   @click="submitAchievement"
+                  :disabled="submitting"
                 >
-                  {{
-                    achForm.editing
-                      ? "Saqlash o'zgartirish"
-                      : "Yutuqni qo'shish"
-                  }}
+                  <template v-if="submitting">
+                    <span
+                      class="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    &nbsp;Iltimos kuting...
+                  </template>
+                  <template v-else>
+                    {{
+                      achForm.editing
+                        ? "Saqlash o'zgartirish"
+                        : "Yutuqni qo'shish"
+                    }}
+                  </template>
                 </button>
               </div>
             </div>
@@ -628,7 +634,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue";
-import { useNuxtApp } from "#app";
+import { useNuxtApp, useRouter, useRoute } from "#app";
 import useAuth from "@/composables/useAuth";
 
 /* CONFIG */
@@ -639,6 +645,10 @@ const MAX_TOTAL_XP = XP_PER_LEVEL * MAX_LEVEL;
 /* Supabase + auth */
 const { $supabase } = useNuxtApp();
 const auth = useAuth();
+
+/* router/route for redirects */
+const router = useRouter();
+const route = useRoute();
 
 /* STATE */
 const user = reactive({
@@ -653,6 +663,9 @@ const user = reactive({
 });
 
 const badges = ref([]);
+
+/* submitting flag to prevent double submits */
+const submitting = ref(false);
 
 /* computed */
 const levelComputed = computed(() => Math.floor((user.xp || 0) / XP_PER_LEVEL));
@@ -783,7 +796,6 @@ async function loadProfile(userId) {
         data.university_short ?? data.universityShort ?? "";
       user.universityFull = data.university_full ?? data.universityFull ?? "";
       user.major = data.major ?? "";
-      // server xp (may be 0) — will be compared with badges sum later
       user.xp = data.xp ?? data.total_xp ?? 0;
       user.globalRank = data.global_rank ?? data.globalRank ?? null;
       user.avatar = data.avatar_url ?? data.avatarUrl ?? data.avatar ?? null;
@@ -802,39 +814,6 @@ async function loadProfile(userId) {
   }
 }
 
-/**
- * updateGlobalRank(userId)
- * - olgan profilingizni hamma profil xp bo'yicha kamayish tartibida olib,
- *   joriy foydalanuvchining rankini hisoblaydi va user.globalRank ga o'rnatadi.
- */
-async function updateGlobalRank(userId) {
-  if (!userId) return;
-  try {
-    const { data, error } = await $supabase
-      .from("profiles")
-      .select("user_id, xp")
-      .order("xp", { ascending: false });
-
-    if (!error && Array.isArray(data)) {
-      // topdan pastga qarab index topamiz (1-based rank)
-      const idx = data.findIndex((p) => (p.user_id || p.userId) === userId);
-      user.globalRank = idx === -1 ? null : idx + 1;
-    } else {
-      if (error) console.warn("updateGlobalRank error:", error);
-      user.globalRank = null;
-    }
-  } catch (e) {
-    console.error("updateGlobalRank exception:", e);
-    user.globalRank = null;
-  }
-}
-
-/**
- * loadBadges(userId)
- * - badges ni yuklaydi, badgesSum (jamiy xp) hisoblaydi
- * - user.xp ga: Math.max(serverXp, badgesSum) qilib o'rnatadi
- * - global rankni yangilaydi
- */
 async function loadBadges(userId) {
   if (!userId) return;
   try {
@@ -853,25 +832,9 @@ async function loadBadges(userId) {
             (b.meta.label || b.meta.title)) ||
           "",
       }));
-
-      // compute sum of xp from badges
-      const badgesSum = badges.value.reduce((s, it) => {
-        const n = Number(it.xp_count || it.xp || 0);
-        return s + (isNaN(n) ? 0 : n);
-      }, 0);
-
-      // keep server xp if server xp is larger, else use badgesSum
-      // this ensures frontend shows correct aggregated xp
-      const serverXp = user.xp || 0;
-      user.xp = Math.max(serverXp, badgesSum);
-
-      // update global rank after badges/profile loaded
-      await updateGlobalRank(userId);
     } else {
       badges.value = [];
       if (error) console.warn("loadBadges error:", error);
-      // ensure rank reset if no badges
-      await updateGlobalRank(userId);
     }
   } catch (e) {
     console.error("loadBadges exception:", e);
@@ -966,9 +929,6 @@ async function saveProfile() {
     }
 
     await loadProfile(uid);
-    // after loading profile, recompute using badges (to ensure consistency)
-    await loadBadges(uid);
-
     if (bsEditModal) bsEditModal.hide();
   } catch (e) {
     console.error("saveProfile exception:", e);
@@ -987,11 +947,10 @@ function editAchievement(a) {
   achForm.editing = true;
   achForm.id = a.id;
   achForm.category = a.category || null;
-  // try to map meta to sub/level/title if present
-  achForm.sub = a.sub || null;
-  achForm.subCustom = a.subCustom || a.meta?.sub || "" || "";
-  achForm.level = a.level || null;
-  achForm.levelCustom = a.levelCustom || a.meta?.level || "" || "";
+  achForm.sub = a.meta?.sub || a.sub || null;
+  achForm.subCustom = a.meta?.subCustom || a.subCustom || "";
+  achForm.level = a.meta?.level || a.level || null;
+  achForm.levelCustom = a.meta?.levelCustom || a.levelCustom || "";
   achForm.title = a.title || "";
   achForm.note = a.note || "";
   achForm.proofUrl = a.proof_url || null;
@@ -1034,7 +993,6 @@ function nextStep() {
     return;
   }
   if (step.value === 2) {
-    // for categories that require either title or sub
     if (!achForm.title && !achForm.sub && !achForm.subCustom && !achForm.code) {
       alert("Kamida bir nom yoki sub-kategoriya kiriting.");
       return;
@@ -1104,7 +1062,6 @@ function computeXpFromForm(form) {
   return 0;
 }
 const previewXp = computed(() => {
-  // if user manually filled xp (achForm.xp) prefer that, else compute
   const manual = achForm.xp || 0;
   const computed = computeXpFromForm(achForm);
   return manual || computed;
@@ -1114,18 +1071,87 @@ function uid() {
   return "a_" + Math.random().toString(36).slice(2, 9);
 }
 
+/* ---------- NEW: sync helpers ---------- */
+async function updateProfileXp(uid) {
+  if (!uid) return;
+  try {
+    const { data: rows, error: rowsErr } = await $supabase
+      .from("badges")
+      .select("xp_count")
+      .eq("user_id", uid);
+
+    if (rowsErr) {
+      console.error("updateProfileXp rowsErr:", rowsErr);
+      return;
+    }
+    const total = Array.isArray(rows)
+      ? rows.reduce((acc, r) => acc + Number(r.xp_count || 0), 0)
+      : 0;
+
+    const { error: upErr } = await $supabase
+      .from("profiles")
+      .update({ xp: total })
+      .eq("user_id", uid);
+
+    if (upErr) {
+      console.error("updateProfileXp update error:", upErr);
+      return;
+    }
+    await loadProfile(uid);
+  } catch (e) {
+    console.error("updateProfileXp exception:", e);
+  }
+}
+
+async function recalcGlobalRanks() {
+  try {
+    const { data: allProfiles, error } = await $supabase
+      .from("profiles")
+      .select("user_id, xp")
+      .order("xp", { ascending: false });
+
+    if (error) {
+      console.error("recalcGlobalRanks: select error", error);
+      return;
+    }
+    if (!Array.isArray(allProfiles)) return;
+
+    for (let i = 0; i < allProfiles.length; i++) {
+      const u = allProfiles[i];
+      const rank = i + 1;
+      try {
+        await $supabase
+          .from("profiles")
+          .update({ global_rank: rank })
+          .eq("user_id", u.user_id);
+      } catch (e) {
+        console.error("recalcGlobalRanks update error for", u.user_id, e);
+      }
+    }
+
+    const uid = auth?.user?.value?.id;
+    if (uid) await loadProfile(uid);
+  } catch (e) {
+    console.error("recalcGlobalRanks exception:", e);
+  }
+}
+
+/* ---------- UPDATED: submitAchievement (double-submit himoya bilan) ---------- */
 async function submitAchievement() {
+  if (submitting.value) return;
+  submitting.value = true;
+
   const uid = auth?.user?.value?.id;
   if (!uid) {
     alert("Foydalanuvchi topilmadi");
+    submitting.value = false;
     return;
   }
 
-  // prepare fields
   const chosenSub = achForm.subCustom || achForm.sub || "";
   const chosenLevel = achForm.levelCustom || achForm.level || "";
   const xpAuto = computeXpFromForm(achForm);
-  const xpToSave = achForm.xp || xpAuto || 0; // if user provided xp override
+  const xpToSave = achForm.xp || xpAuto || 0;
   const payload = {
     user_id: uid,
     code: achForm.code || `auto_${Date.now()}`,
@@ -1155,11 +1181,12 @@ async function submitAchievement() {
       if (error) {
         console.error("Update badge error", error);
         alert("Yutuqni tahrirlashda xato");
+        submitting.value = false;
         return;
       }
-      // reload badges and profile
       await loadBadges(uid);
-      await loadProfile(uid);
+      await updateProfileXp(uid);
+      await recalcGlobalRanks();
     } else {
       const { data, error } = await $supabase
         .from("badges")
@@ -1169,17 +1196,20 @@ async function submitAchievement() {
       if (error) {
         console.error("Insert badge error", error);
         alert("Yutuq qo'shishda xato");
+        submitting.value = false;
         return;
       }
-      // reload badges and profile (profile xp may be recalculated on server or we handle client-side)
       await loadBadges(uid);
-      await loadProfile(uid);
+      await updateProfileXp(uid);
+      await recalcGlobalRanks();
     }
     if (bsAchievementModal) bsAchievementModal.hide();
     resetAchForm();
   } catch (e) {
     console.error("submitAchievement exception:", e);
     alert("Yutuq qo'shishda xato");
+  } finally {
+    submitting.value = false;
   }
 }
 
@@ -1194,10 +1224,21 @@ async function deleteAchievement(id) {
     }
     const uid = auth?.user?.value?.id;
     await loadBadges(uid);
-    await loadProfile(uid);
+    await updateProfileXp(uid);
+    await recalcGlobalRanks();
   } catch (e) {
     console.error("deleteAchievement exception:", e);
     alert("O'chirishda xato");
+  }
+}
+
+/* ---------- AUTH GUARD: redirect to /signin if not authenticated ---------- */
+function ensureAuthOrRedirect() {
+  const uid = auth?.user?.value?.id;
+  const path = route.path || "";
+  const allowedUnauthPaths = ["/signin", "/signup", "/forgot", "/auth"];
+  if (!uid && !allowedUnauthPaths.includes(path)) {
+    router.replace("/signin").catch(() => {});
   }
 }
 
@@ -1212,14 +1253,13 @@ onMounted(async () => {
       backdrop: "static",
     });
 
-  // watch auth user
+  ensureAuthOrRedirect();
+
   watch(
     () => auth.user?.value?.id,
     async (id) => {
-      if (id) {
-        await loadProfile(id);
-        await loadBadges(id);
-      } else {
+      if (!id) {
+        ensureAuthOrRedirect();
         user.user_id = null;
         user.fullname = "";
         user.universityShort = "";
@@ -1227,8 +1267,10 @@ onMounted(async () => {
         user.major = "";
         user.xp = 0;
         user.avatar = null;
-        user.globalRank = null;
         badges.value = [];
+      } else {
+        await loadProfile(id);
+        await loadBadges(id);
       }
     },
     { immediate: true }
@@ -1243,7 +1285,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* (styles unchanged, kept as in original) */
 .profile-page {
 }
 
