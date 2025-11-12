@@ -32,7 +32,7 @@
             <img
               src="/images/trophy.png"
               alt="trophy"
-              style="position: absolute; right: -25rem; top: -20rem;"
+              style="position: fixed; top: 7rem; right: 2rem;"
             />
           </div>
         </div>
