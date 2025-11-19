@@ -2,7 +2,7 @@
   <section class="messenger">
     <div class="row g-3">
       <!-- LEFT: users / conversations -->
-      <div class="col-lg-4 col-xl-3 p-0 ">
+      <div class="col-lg-4 col-xl-3 p-0">
         <div class="card border-0 shadow-sm h-100">
           <div class="p-3 border-bottom">
             <div class="input-group">
@@ -206,44 +206,48 @@
 </template>
 
 <script setup>
+import {
+  ref,
+  computed,
+  onMounted,
+  watch,
+  nextTick,
+  onBeforeUnmount,
+} from "vue";
+import { useRouter } from "vue-router";
+import useAuth from "@/composables/useAuth";
+
 /*
-  Messenger.vue
-  - Supabase bilan real vaqtda xabar almashish
-  - users: profiles jadvalidan foydalanuvchilarni yuklaydi (o'zingizni tashlab)
-  - messages: messages jadvalidan yüklaydi va realtime obuna bo'ladi
-  - unreadMap: har bir user uchun o'qilmagan xabarlar soni
-  - Navbar uchun global event: 'messages:unread' (detail: totalUnread)
+  Messenger (Django REST edition)
+  - useAuth().api — axios instance
+  - Fetches /profiles/ and /messages/ from Django REST API
+  - Polling-based "realtime" (every 3s). You can adjust interval.
+  - Assumes /messages/ returns messages involving current user (MessageViewSet.get_queryset does that).
 */
 
-import { ref, computed, onMounted, watch, nextTick } from "vue";
-import { useNuxtApp } from "#app";
-import useAuth from "@/composables/useAuth";
-import { useRouter } from "vue-router";
-
-const { $supabase } = useNuxtApp();
 const auth = useAuth();
 const router = useRouter();
 
+const POLL_MS = 3000;
+
 const q = ref("");
-const users = ref([]); // list of other users (profiles)
+const users = ref([]); // profiles (other users)
 const loadingSearch = ref(false);
 const selectedUser = ref(null);
 const messages = ref([]);
 const meId = ref(null);
 const draft = ref("");
 const sending = ref(false);
-const typing = ref(false);
 const chatBody = ref(null);
+const unreadMap = ref({}); // { user_id: count }
+const pollingHandle = ref(null);
 
-// map { user_id: count }
-const unreadMap = ref({});
-
-// total unread for navbar
+// total unread
 const totalUnread = computed(() =>
   Object.values(unreadMap.value).reduce((s, v) => s + (v || 0), 0)
 );
 
-// helper funcs
+// helpers
 function initials(text = "") {
   if (!text) return "--";
   return text
@@ -258,29 +262,20 @@ function formatTime(ts) {
   const d = new Date(ts);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
-function formatLastMsgTime(ts) {
-  if (!ts) return "";
-  const d = new Date(ts);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
 
-// focus search input (UI helper)
 function focusSearch() {
   const el = document.querySelector(".input-group input");
   if (el) el.focus();
 }
 
-// ensure authenticated — if not redirect to signin
 async function ensureAuth() {
   let uid = auth?.user?.value?.id;
   if (!uid) {
-    try {
-      const res = await $supabase.auth.getUser();
-      uid = res?.data?.user?.id;
-    } catch {}
+    // try to read from auth composable (init might have set it)
+    await auth.init?.();
+    uid = auth?.user?.value?.id;
   }
   if (!uid) {
-    // redirect to signin page
     router.push("/signin");
     return false;
   }
@@ -288,130 +283,103 @@ async function ensureAuth() {
   return true;
 }
 
-// search users in profiles (exclude current user)
+/* ---------- USERS (profiles) ---------- */
 async function searchUsers() {
   if (!(await ensureAuth())) return;
   loadingSearch.value = true;
   try {
-    let query = $supabase
-      .from("profiles")
-      .select("user_id, email, fullname, avatar_url, updated_at, created_at")
-      .neq("user_id", meId.value)
-      .limit(50);
-
-    if (q.value && q.value.trim()) {
-      const term = q.value.trim();
-      // try searching by email or fullname
-      query = query.ilike("email", `%${term}%`).or(`fullname.ilike.%${term}%`);
-      // supabase JS does not chain .or after .ilike like that; fallback to rpc-style:
-      // but for safety we'll use two queries: email then fullname
-    }
-
-    // Simpler robust approach: fetch some records and filter client-side (small scale)
-    const { data, error } = await $supabase
-      .from("profiles")
-      .select("user_id, email, fullname, avatar_url, updated_at, created_at")
-      .neq("user_id", meId.value)
-      .limit(200);
-
-    if (!error && Array.isArray(data)) {
-      const term = q.value.trim().toLowerCase();
-      let arr = data;
+    // fetch all profiles and filter client-side (small scale)
+    const resp = await auth.api.get(`/profiles/`);
+    if (resp.status === 200) {
+      let data = Array.isArray(resp.data) ? resp.data : resp.data.results ?? [];
+      // exclude current user
+      data = data.filter((p) => (p.user?.id ?? p.user_id) !== meId.value);
+      const term = (q.value || "").trim().toLowerCase();
       if (term) {
-        arr = data.filter(
+        data = data.filter(
           (it) =>
             (it.email && it.email.toLowerCase().includes(term)) ||
+            (it.full_name && it.full_name.toLowerCase().includes(term)) ||
             (it.fullname && it.fullname.toLowerCase().includes(term))
         );
       }
-      // load last_message_at and unread counts per user via messages table aggregation
-      await loadLastMetaForUsers(arr);
+      // normalize fields
+      users.value = data.map((p) => ({
+        user_id: p.user?.id ?? p.user_id,
+        email: p.email ?? "",
+        fullname: p.full_name ?? p.fullname ?? "",
+        avatar: p.avatar_url ?? p.avatar ?? null,
+        last_message_at: null,
+      }));
+      // load message meta (unread + last message) for these users
+      await computeMetaForUsers();
     } else {
       users.value = [];
     }
   } catch (e) {
-    console.error("searchUsers exception", e);
+    console.error("searchUsers error", e);
     users.value = [];
   } finally {
     loadingSearch.value = false;
   }
 }
 
-// load last_message_at and unread counts for each user (small scale)
-async function loadLastMetaForUsers(arrProfiles) {
-  const ids = arrProfiles.map((p) => p.user_id);
-  users.value = arrProfiles.map((p) => ({ ...p, last_message_at: null }));
-  if (!ids.length) return;
-
+async function computeMetaForUsers() {
+  // fetch all messages for current user then compute per-peer data
   try {
-    // fetch last message between me and each user: get messages where (from->to) or (to->from)
-    // we'll fetch messages where from_id in [me, ids] and to_id in [me, ids]
-    const { data: msgs } = await $supabase
-      .from("messages")
-      .select("id, from_id, to_id, text, created_at, read")
-      .in("from_id", [meId.value, ...ids])
-      .in("to_id", [meId.value, ...ids])
-      .order("created_at", { ascending: false })
-      .limit(1000);
-
-    // compute last_message_at and unread per user
-    const mapLast = {};
-    const mapUnread = {};
-    if (Array.isArray(msgs)) {
-      msgs.forEach((m) => {
-        const peer = m.from_id === meId.value ? m.to_id : m.from_id;
-        if (!mapLast[peer]) mapLast[peer] = m.created_at;
-        if (m.to_id === meId.value && !m.read) {
-          mapUnread[m.from_id] = (mapUnread[m.from_id] || 0) + 1;
-        }
-      });
-    }
-
-    // apply
-    users.value = users.value.map((u) => ({
-      ...u,
-      last_message_at:
-        mapLast[u.user_id] || u.updated_at || u.created_at || null,
-    }));
-    // set unread map entries for peers and keep others
-    ids.forEach((id) => {
-      unreadMap.value[id] = mapUnread[id] || 0;
+    const resp = await auth.api.get(`/messages/`); // returns messages involving me
+    if (resp.status !== 200) return;
+    const all = Array.isArray(resp.data) ? resp.data : resp.data.results ?? [];
+    // reset maps
+    const lastMap = {};
+    const unread = {};
+    all.forEach((m) => {
+      const fromId = m.from_user?.id ?? m.from_id;
+      const toId = m.to_user?.id ?? m.to_id;
+      const peer = fromId === meId.value ? toId : fromId;
+      // last message time per peer (take newest)
+      const t = m.created_at || m.createdAt || m.createdAt || m.created;
+      if (!lastMap[peer] || new Date(t) > new Date(lastMap[peer])) {
+        lastMap[peer] = t;
+      }
+      // unread counting: messages TO me and read false
+      if (toId === meId.value && !m.read) {
+        unread[fromId] = (unread[fromId] || 0) + 1;
+      }
     });
 
-    // dispatch global unread total for navbar
+    // apply to users list
+    users.value = users.value.map((u) => ({
+      ...u,
+      last_message_at: lastMap[u.user_id] || u.last_message_at || null,
+    }));
+    // set unread map
+    unreadMap.value = { ...(unreadMap.value || {}), ...unread };
     dispatchUnread();
   } catch (e) {
-    console.error("loadLastMetaForUsers error", e);
+    console.error("computeMetaForUsers error", e);
   }
 }
 
-// open chat with user: load messages and subscribe realtime for this pair
-let messagesSub = null;
-async function openChatWith(profile) {
-  if (!(await ensureAuth())) return;
-  selectedUser.value = profile;
-  await loadMessagesWith(profile.user_id);
-  // mark unread messages from that user as read
-  await markMessagesReadFrom(profile.user_id);
-  // subscribe realtime to messages table for conversations involving me and that user
-  subscribeMessages(profile.user_id);
-  nextTick(scrollToBottom);
-}
-
-// load messages between me and peer
+/* ---------- MESSAGES ---------- */
 async function loadMessagesWith(peerId) {
   try {
-    const { data, error } = await $supabase
-      .from("messages")
-      .select("id, from_id, to_id, text, created_at, read")
-      .or(
-        `and(from_id.eq.${meId.value},to_id.eq.${peerId}),and(from_id.eq.${peerId},to_id.eq.${meId.value})`
-      )
-      .order("created_at", { ascending: true })
-      .limit(1000);
-
-    if (!error && Array.isArray(data)) {
-      messages.value = data;
+    // fetch all messages involving current user, then filter client-side for this peer
+    const resp = await auth.api.get(`/messages/`);
+    if (resp.status === 200) {
+      const all = Array.isArray(resp.data)
+        ? resp.data
+        : resp.data.results ?? [];
+      messages.value = all
+        .filter((m) => {
+          const fromId = m.from_user?.id ?? m.from_id;
+          const toId = m.to_user?.id ?? m.to_id;
+          return (
+            (fromId === meId.value && toId === peerId) ||
+            (fromId === peerId && toId === meId.value)
+          );
+        })
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     } else {
       messages.value = [];
     }
@@ -421,208 +389,162 @@ async function loadMessagesWith(peerId) {
   }
 }
 
-// subscribe realtime for messages (for the current peer)
-function subscribeMessages(peerId) {
-  // unsubscribe previous
-  if (messagesSub && typeof messagesSub.unsubscribe === "function") {
-    try {
-      messagesSub.unsubscribe();
-    } catch {}
-    messagesSub = null;
-  }
-
-  // listen for insert events where (from_id = me AND to_id = peer) OR (from_id = peer AND to_id = me)
-  messagesSub = $supabase
-    .channel("public:messages")
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `to_id=eq.${meId.value},from_id=eq.${peerId}`, // will only capture peer->me? need both
-      },
-      (payload) => {
-        // payload.record contains new message
-        const rec = payload.record;
-        // if message is from peer to me -> push and mark as unread (or mark read if chat open)
-        if (
-          (rec.from_id === peerId && rec.to_id === meId.value) ||
-          (rec.from_id === meId.value && rec.to_id === peerId)
-        ) {
-          messages.value.push(rec);
-          // if message to me and chat open with peer -> optionally mark read
-          if (
-            rec.to_id === meId.value &&
-            selectedUser.value &&
-            selectedUser.value.user_id === peerId
-          ) {
-            markMessageRead(rec.id);
-          } else if (rec.to_id === meId.value) {
-            unreadMap.value[rec.from_id] =
-              (unreadMap.value[rec.from_id] || 0) + 1;
-            dispatchUnread();
-          }
-          nextTick(scrollToBottom);
-        }
-      }
-    )
-    // Also subscribe for other messages to update unread counts globally
-    .on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "messages" },
-      (payload) => {
-        const r = payload.record;
-        if (r.to_id === meId.value) {
-          // new incoming message
-          // if chat with sender not open, increment unread
-          if (
-            !(selectedUser.value && selectedUser.value.user_id === r.from_id)
-          ) {
-            unreadMap.value[r.from_id] = (unreadMap.value[r.from_id] || 0) + 1;
-            dispatchUnread();
-          }
-        }
-      }
-    )
-    .subscribe(async (status) => {
-      // status indicates subscription status
-      // no-op
-    });
+async function openChatWith(profile) {
+  if (!(await ensureAuth())) return;
+  selectedUser.value = profile;
+  await loadMessagesWith(profile.user_id);
+  await markMessagesReadFrom(profile.user_id);
+  // scroll
+  nextTick(scrollToBottom);
 }
 
-// mark all messages from peer to me as read
 async function markMessagesReadFrom(peerId) {
   try {
-    const { error } = await $supabase
-      .from("messages")
-      .update({ read: true })
-      .eq("from_id", peerId)
-      .eq("to_id", meId.value)
-      .is("read", false);
-    if (error) console.warn("markMessagesReadFrom error", error);
-    // reset unread counter for peer
+    // find local message ids that are unread and from peer
+    const toPatch = messages.value
+      .filter((m) => {
+        const fromId = m.from_user?.id ?? m.from_id;
+        const toId = m.to_user?.id ?? m.to_id;
+        return fromId === peerId && toId === meId.value && !m.read;
+      })
+      .map((m) => m.id);
+
+    // PATCH each message read=true (backend should allow)
+    await Promise.all(
+      toPatch.map((id) =>
+        auth.api.patch(`/messages/${id}/`, { read: true }).catch((e) => {
+          console.warn(
+            "mark single message read failed",
+            id,
+            e?.response?.data ?? e.message
+          );
+        })
+      )
+    );
+
+    // reset unread counter
     unreadMap.value[peerId] = 0;
     dispatchUnread();
   } catch (e) {
-    console.error("markMessagesReadFrom exception", e);
+    console.error("markMessagesReadFrom error", e);
   }
 }
 
-// mark single message as read (used for real-time inserted message in current chat)
-async function markMessageRead(messageId) {
-  try {
-    await $supabase.from("messages").update({ read: true }).eq("id", messageId);
-  } catch (e) {
-    console.error("markMessageRead error", e);
-  }
-}
-
-// send message (single-click protected)
 async function send() {
   if (!selectedUser.value) return;
   if (!draft.value.trim()) return;
-  if (sending.value) return; // prevent double-send
-
+  if (sending.value) return;
   sending.value = true;
   const text = draft.value.trim();
   const payload = {
-    from_id: meId.value,
-    to_id: selectedUser.value.user_id,
+    from_user: auth.user?.value?.id ?? meId.value,
+    to_user: selectedUser.value.user_id,
     text,
-    created_at: new Date().toISOString(),
-    read: false,
   };
-
   try {
-    const { data, error } = await $supabase
-      .from("messages")
-      .insert([payload])
-      .select()
-      .single();
-    if (error) {
-      console.error("insert message error", error);
-      // show alert or toast as needed
-      return;
+    const resp = await auth.api.post(`/messages/`, payload);
+    if (resp.status === 201 || resp.status === 200) {
+      // add returned item or optimistic push
+      const item = resp.data || {
+        ...payload,
+        created_at: new Date().toISOString(),
+        id: Date.now(),
+      };
+      messages.value.push(item);
+      draft.value = "";
+      // ensure other metadata updated
+      await computeMetaForUsers();
+      nextTick(scrollToBottom);
+    } else {
+      console.error("send unexpected response", resp);
     }
-    // push to local messages
-    if (data) messages.value.push(data);
-    // clear draft
-    draft.value = "";
-    // after sending, ensure receiver's unread handled on their side (they will receive realtime)
-    nextTick(scrollToBottom);
   } catch (e) {
-    console.error("send exception", e);
+    console.error("send error", e);
+    alert(
+      "Xabar yuborilmadi: " +
+        (e?.response?.data ? JSON.stringify(e.response.data) : e.message || e)
+    );
   } finally {
-    // briefly debounce re-enable to avoid accidental duplicates
-    setTimeout(() => (sending.value = false), 600);
+    setTimeout(() => (sending.value = false), 400);
   }
 }
 
-// open new chat modal / focus input
-function openNewChat() {
-  focusSearch();
+/* Polling: refresh messages & users metadata */
+async function pollTick() {
+  try {
+    // refresh messages list (global) and recompute unread counts/meta
+    const resp = await auth.api.get(`/messages/`);
+    if (resp.status === 200) {
+      const all = Array.isArray(resp.data)
+        ? resp.data
+        : resp.data.results ?? [];
+      // update unreadMap
+      const unread = {};
+      all.forEach((m) => {
+        const fromId = m.from_user?.id ?? m.from_id;
+        const toId = m.to_user?.id ?? m.to_id;
+        if (toId === meId.value && !m.read) {
+          unread[fromId] = (unread[fromId] || 0) + 1;
+        }
+      });
+      unreadMap.value = { ...(unreadMap.value || {}), ...unread };
+      // if a chat open, update messages for that peer
+      if (selectedUser.value) {
+        const peerId = selectedUser.value.user_id;
+        messages.value = all
+          .filter((m) => {
+            const fromId = m.from_user?.id ?? m.from_id;
+            const toId = m.to_user?.id ?? m.to_id;
+            return (
+              (fromId === meId.value && toId === peerId) ||
+              (fromId === peerId && toId === meId.value)
+            );
+          })
+          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      }
+      // recompute user meta
+      await computeMetaForUsers();
+      dispatchUnread();
+    }
+  } catch (e) {
+    console.warn("pollTick error", e);
+  }
 }
 
-// scroll
+function startPolling() {
+  stopPolling();
+  pollingHandle.value = setInterval(pollTick, POLL_MS);
+}
+function stopPolling() {
+  if (pollingHandle.value) {
+    clearInterval(pollingHandle.value);
+    pollingHandle.value = null;
+  }
+}
+
 function scrollToBottom() {
   const el = chatBody.value;
   if (!el) return;
-  el.scrollTop = el.scrollHeight + 200;
+  el.scrollTop = el.scrollHeight + 100;
 }
 
-// dispatch unread total to global (for navbar)
 function dispatchUnread() {
   const ev = new CustomEvent("messages:unread", { detail: totalUnread.value });
   window.dispatchEvent(ev);
 }
 
-// load initial: ensure auth and load users & listen global messages
+/* lifecycle */
 onMounted(async () => {
   const ok = await ensureAuth();
   if (!ok) return;
-
-  // initial search/load
   await searchUsers();
-
-  // subscribe to messages directed to me to update unread badge and play notification
-  const realtime = $supabase
-    .channel("public:messages:inbox")
-    .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages",
-        filter: `to_id=eq.${meId.value}`,
-      },
-      (payload) => {
-        const rec = payload.record;
-        // incoming message to me
-        // if current chat with sender open -> push and mark read
-        if (selectedUser.value && selectedUser.value.user_id === rec.from_id) {
-          messages.value.push(rec);
-          markMessageRead(rec.id);
-        } else {
-          unreadMap.value[rec.from_id] =
-            (unreadMap.value[rec.from_id] || 0) + 1;
-          // optionally play sound / show toast
-        }
-        dispatchUnread();
-      }
-    )
-    .subscribe();
-
-  // also compute initial unread total dispatch
-  dispatchUnread();
+  // initial messages load via pollTick
+  await pollTick();
+  startPolling();
 });
 
-// watch selectedUser change -> load messages and reset unread
-watch(selectedUser, async (nv, ov) => {
-  if (!nv) return;
-  await loadMessagesWith(nv.user_id);
-  await markMessagesReadFrom(nv.user_id);
-  nextTick(scrollToBottom);
+onBeforeUnmount(() => {
+  stopPolling();
 });
 </script>
 

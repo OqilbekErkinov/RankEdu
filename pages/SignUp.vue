@@ -86,7 +86,7 @@ async function onSubmit() {
       email: email.value,
       phone: phone.value,
       password: password.value,
-      avatarDataUrl: avatarPreview.value,
+      avatarDataUrl: avatarPreview.value
     });
     // supabase signUp response
     if (res.error) {

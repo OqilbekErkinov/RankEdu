@@ -642,9 +642,8 @@ const XP_PER_LEVEL = 100;
 const MAX_LEVEL = 100;
 const MAX_TOTAL_XP = XP_PER_LEVEL * MAX_LEVEL;
 
-/* Supabase + auth */
-const { $supabase } = useNuxtApp();
-const auth = useAuth();
+/* auth (Django) + axios api */
+const auth = useAuth(); // auth.api -> axios instance, auth.user -> readonly user ref
 
 /* router/route for redirects */
 const router = useRouter();
@@ -779,35 +778,34 @@ function tierClass(xp) {
   return "bronze";
 }
 
-/* ---------- DB: load profile & badges ---------- */
+/* ---------- DB: load profile & badges (Django API) ---------- */
+
 async function loadProfile(userId) {
   if (!userId) return;
   try {
-    const { data, error } = await $supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-
-    if (!error && data) {
-      user.user_id = data.user_id ?? data.userId ?? userId;
-      user.fullname = data.fullname ?? data.full_name ?? "";
-      user.universityShort =
-        data.university_short ?? data.universityShort ?? "";
-      user.universityFull = data.university_full ?? data.universityFull ?? "";
-      user.major = data.major ?? "";
-      user.xp = data.xp ?? data.total_xp ?? 0;
-      user.globalRank = data.global_rank ?? data.globalRank ?? null;
-      user.avatar = data.avatar_url ?? data.avatarUrl ?? data.avatar ?? null;
-    } else {
-      // fallback: auth metadata
-      const res = await $supabase.auth.getUser();
-      const u = res?.data?.user;
-      if (u) {
-        user.user_id = user.user_id || u.id;
-        user.fullname = user.fullname || u.user_metadata?.full_name || "";
-        user.avatar = user.avatar || u.user_metadata?.avatar_url || null;
+    // Django endpoint: GET /profiles/?user_id=<id> (returns list)
+    const resp = await auth.api.get(`/profiles/?user_id=${encodeURIComponent(userId)}`);
+    if (resp.status === 200) {
+      const data = Array.isArray(resp.data) ? resp.data[0] : resp.data;
+      if (data) {
+        user.user_id = data.user?.id ?? data.user_id ?? userId;
+        user.fullname = data.full_name ?? data.fullname ?? data.fullname ?? "";
+        user.universityShort = data.university_short ?? data.universityShort ?? "";
+        user.universityFull = data.university_full ?? data.universityFull ?? "";
+        user.major = data.major ?? "";
+        user.xp = data.xp ?? data.total_xp ?? 0;
+        user.globalRank = data.global_rank ?? data.globalRank ?? null;
+        // avatar can be relative url from Django serializer (ProfileSerializer.get_avatar_url)
+        user.avatar = (data.avatar_url || data.avatar || data.avatarUrl) ?? null;
+        return;
       }
+    }
+    // fallback: if backend returned no profile, try to set data from auth.user
+    const u = auth.user && auth.user.value;
+    if (u) {
+      user.user_id = user.user_id || u.id;
+      user.fullname = user.fullname || u.full_name || u.username || "";
+      user.avatar = user.avatar || u.avatar || null;
     }
   } catch (e) {
     console.error("loadProfile exception:", e);
@@ -817,24 +815,18 @@ async function loadProfile(userId) {
 async function loadBadges(userId) {
   if (!userId) return;
   try {
-    const { data, error } = await $supabase
-      .from("badges")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (!error && Array.isArray(data)) {
-      badges.value = data.map((b) => ({
+    // Django endpoint: GET /badges/?user_id=<id>
+    const resp = await auth.api.get(`/badges/?user_id=${encodeURIComponent(userId)}&ordering=-created_at`);
+    if (resp.status === 200) {
+      const data = Array.isArray(resp.data) ? resp.data : resp.data.results ?? [];
+      badges.value = (Array.isArray(data) ? data : []).map((b) => ({
         ...b,
         metaLine:
-          (b.meta &&
-            typeof b.meta === "object" &&
-            (b.meta.label || b.meta.title)) ||
+          (b.meta && typeof b.meta === "object" && (b.meta.label || b.meta.title)) ||
           "",
       }));
     } else {
       badges.value = [];
-      if (error) console.warn("loadBadges error:", error);
     }
   } catch (e) {
     console.error("loadBadges exception:", e);
@@ -842,7 +834,7 @@ async function loadBadges(userId) {
   }
 }
 
-/* ---------- profile edit ---------- */
+/* ---------- profile edit (uses /profiles/update_me/ action) ---------- */
 function openEditProfile() {
   editProfileForm.fullname = user.fullname || "";
   editProfileForm.universityShort = user.universityShort || "";
@@ -866,77 +858,62 @@ function removeAvatar() {
   user.avatar = null;
 }
 
-/* robust upsert helper (keeps behavior if schema different) */
-async function tryUpsertWithFallback(payload) {
-  try {
-    const { data, error } = await $supabase
-      .from("profiles")
-      .upsert(payload, { onConflict: ["user_id"] })
-      .select()
-      .single();
-    return { data, error };
-  } catch (e) {
-    return { data: null, error: e };
-  }
-}
-
+/* Upsert using Django: PUT/PATCH to profiles/update_me/ (current user) */
 async function saveProfile() {
   if (!editProfileForm.fullname || !editProfileForm.fullname.trim()) {
     alert("To'liq ism kiriting");
     return;
   }
 
-  let uid = auth?.user?.value?.id;
+  const uid = auth?.user?.value?.id;
   if (!uid) {
-    try {
-      const res = await $supabase.auth.getUser();
-      uid = res?.data?.user?.id;
-      if (!uid) {
-        alert("Foydalanuvchi tizimga kirmagan");
-        return;
-      }
-    } catch (e) {
-      console.error("Could not get auth user:", e);
-      alert("Foydalanuvchi topilmadi");
-      return;
-    }
+    alert("Foydalanuvchi tizimga kirmagan");
+    return;
   }
 
   const newXp = editProfileForm.resetXpConfirm ? 0 : user.xp || 0;
-  const avatar_url = user.avatar || null;
-
-  const payload = {
-    user_id: uid,
-    fullname: editProfileForm.fullname || null,
-    university_short: editProfileForm.universityShort || null,
-    university_full: editProfileForm.universityFull || null,
-    major: editProfileForm.major || null,
-    avatar_url,
-    xp: newXp,
-  };
 
   try {
-    const { data, error } = await $supabase
-      .from("profiles")
-      .upsert(payload, { onConflict: "user_id" })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Profile upsert error", error);
-      alert("Profilni saqlashda xato: " + (error.message || error));
-      return;
+    let resp;
+    // If avatarFile present -> send FormData (multipart)
+    if (editProfileForm.avatarFile) {
+      const fd = new FormData();
+      fd.append("fullname", editProfileForm.fullname || "");
+      fd.append("university_short", editProfileForm.universityShort || "");
+      fd.append("university_full", editProfileForm.universityFull || "");
+      fd.append("major", editProfileForm.major || "");
+      fd.append("xp", String(newXp));
+      fd.append("avatar", editProfileForm.avatarFile);
+      // axios with FormData will set proper content-type
+      resp = await auth.api.put("/profiles/update_me/", fd);
+    } else {
+      // JSON PATCH/PUT
+      resp = await auth.api.put("/profiles/update_me/", {
+        full_name: editProfileForm.fullname || "",
+        university_short: editProfileForm.universityShort || "",
+        university_full: editProfileForm.universityFull || "",
+        major: editProfileForm.major || "",
+        xp: newXp,
+        // if user removed avatar send explicit null (server should handle)
+        avatar: user.avatar ? user.avatar : null,
+      });
     }
 
-    await loadProfile(uid);
-    if (bsEditModal) bsEditModal.hide();
+    if (resp.status === 200 || resp.status === 201) {
+      await loadProfile(uid);
+      if (bsEditModal) bsEditModal.hide();
+      return;
+    }
+    console.error("saveProfile unexpected response", resp);
+    alert("Profilni saqlashda xato");
   } catch (e) {
     console.error("saveProfile exception:", e);
-    alert("Profilni saqlashda xato");
+    const msg = e?.response?.data ? JSON.stringify(e.response.data) : e.message || e;
+    alert("Profilni saqlashda xato: " + msg);
   }
 }
 
-/* ---------- Achievements modal logic (merged) ---------- */
+/* ---------- Achievements (badges) ---------- */
 function openAddAchievement() {
   resetAchForm();
   step.value = 1;
@@ -1014,7 +991,7 @@ function onProofSelected(e) {
   }
 }
 
-/* XP mapping (same logic as old code) */
+/* XP mapping */
 function computeXpFromForm(form) {
   if (!form || !form.category) return 0;
   if (form.category === "international_cert") {
@@ -1071,72 +1048,65 @@ function uid() {
   return "a_" + Math.random().toString(36).slice(2, 9);
 }
 
-/* ---------- NEW: sync helpers ---------- */
+/* ---------- sync helpers (Django) ---------- */
+
+/* Sum badges xp and update profile xp via /profiles/update_me/ */
 async function updateProfileXp(uid) {
   if (!uid) return;
   try {
-    const { data: rows, error: rowsErr } = await $supabase
-      .from("badges")
-      .select("xp_count")
-      .eq("user_id", uid);
-
-    if (rowsErr) {
-      console.error("updateProfileXp rowsErr:", rowsErr);
+    // GET badges for this user
+    const resp = await auth.api.get(`/badges/?user_id=${encodeURIComponent(uid)}`);
+    if (resp.status !== 200) {
+      console.error("updateProfileXp: badges fetch failed", resp);
       return;
     }
-    const total = Array.isArray(rows)
-      ? rows.reduce((acc, r) => acc + Number(r.xp_count || 0), 0)
-      : 0;
+    const rows = Array.isArray(resp.data) ? resp.data : resp.data.results ?? [];
+    const total = rows.reduce((acc, r) => acc + Number(r.xp_count || 0), 0);
 
-    const { error: upErr } = await $supabase
-      .from("profiles")
-      .update({ xp: total })
-      .eq("user_id", uid);
-
-    if (upErr) {
-      console.error("updateProfileXp update error:", upErr);
-      return;
+    // PATCH current user's profile xp using update_me
+    const up = await auth.api.put("/profiles/update_me/", { xp: total });
+    if (up.status === 200 || up.status === 204) {
+      await loadProfile(uid);
+    } else {
+      console.error("updateProfileXp update failed", up);
     }
-    await loadProfile(uid);
   } catch (e) {
     console.error("updateProfileXp exception:", e);
   }
 }
 
+/* Recalculate global ranks client-side and push to backend if permitted.
+   NOTE: server should ideally provide this operation; this client-side loop
+   may be rate-limited/forbidden depending on permissions. Use with caution.
+*/
 async function recalcGlobalRanks() {
   try {
-    const { data: allProfiles, error } = await $supabase
-      .from("profiles")
-      .select("user_id, xp")
-      .order("xp", { ascending: false });
-
-    if (error) {
-      console.error("recalcGlobalRanks: select error", error);
+    // fetch all profiles sorted by xp desc
+    const resp = await auth.api.get("/profiles/?ordering=-xp");
+    if (resp.status !== 200) {
+      console.error("recalcGlobalRanks: fetch failed", resp);
       return;
     }
-    if (!Array.isArray(allProfiles)) return;
-
+    const allProfiles = Array.isArray(resp.data) ? resp.data : resp.data.results ?? [];
     for (let i = 0; i < allProfiles.length; i++) {
-      const u = allProfiles[i];
+      const p = allProfiles[i];
       const rank = i + 1;
+      // try to update — backend may restrict this to admins only
       try {
-        await $supabase
-          .from("profiles")
-          .update({ global_rank: rank })
-          .eq("user_id", u.user_id);
+        await auth.api.patch(`/profiles/${p.user?.id || p.id}/`, { global_rank: rank });
       } catch (e) {
-        console.error("recalcGlobalRanks update error for", u.user_id, e);
+        // ignore per-user errors, but log
+        console.warn("recalcGlobalRanks: update failed for", p.user?.id || p.id, e?.response?.data ?? e.message);
       }
     }
-
-    const uid = auth?.user?.value?.id;
+    const uid = auth.user?.value?.id;
     if (uid) await loadProfile(uid);
   } catch (e) {
     console.error("recalcGlobalRanks exception:", e);
   }
 }
 
-/* ---------- UPDATED: submitAchievement (double-submit himoya bilan) ---------- */
+/* ---------- submitAchievement (Django badges endpoints) ---------- */
 async function submitAchievement() {
   if (submitting.value) return;
   submitting.value = true;
@@ -1155,8 +1125,7 @@ async function submitAchievement() {
   const payload = {
     user_id: uid,
     code: achForm.code || `auto_${Date.now()}`,
-    title:
-      achForm.title || (chosenSub ? `${chosenSub} ${chosenLevel}` : "Yutuq"),
+    title: achForm.title || (chosenSub ? `${chosenSub} ${chosenLevel}` : "Yutuq"),
     xp_count: xpToSave,
     meta: {
       sub: achForm.sub || null,
@@ -1172,42 +1141,33 @@ async function submitAchievement() {
 
   try {
     if (achForm.editing && achForm.id) {
-      const { data, error } = await $supabase
-        .from("badges")
-        .update(payload)
-        .eq("id", achForm.id)
-        .select()
-        .single();
-      if (error) {
-        console.error("Update badge error", error);
+      const resp = await auth.api.put(`/badges/${achForm.id}/`, payload);
+      if (!(resp.status === 200 || resp.status === 204)) {
+        console.error("Update badge error", resp);
         alert("Yutuqni tahrirlashda xato");
         submitting.value = false;
         return;
       }
-      await loadBadges(uid);
-      await updateProfileXp(uid);
-      await recalcGlobalRanks();
     } else {
-      const { data, error } = await $supabase
-        .from("badges")
-        .insert([payload])
-        .select()
-        .single();
-      if (error) {
-        console.error("Insert badge error", error);
+      const resp = await auth.api.post("/badges/", payload);
+      if (!(resp.status === 201 || resp.status === 200)) {
+        console.error("Insert badge error", resp);
         alert("Yutuq qo'shishda xato");
         submitting.value = false;
         return;
       }
-      await loadBadges(uid);
-      await updateProfileXp(uid);
-      await recalcGlobalRanks();
     }
+
+    await loadBadges(uid);
+    await updateProfileXp(uid);
+    await recalcGlobalRanks();
+
     if (bsAchievementModal) bsAchievementModal.hide();
     resetAchForm();
   } catch (e) {
     console.error("submitAchievement exception:", e);
-    alert("Yutuq qo'shishda xato");
+    const msg = e?.response?.data ? JSON.stringify(e.response.data) : e.message || e;
+    alert("Yutuq qo'shishda xato: " + msg);
   } finally {
     submitting.value = false;
   }
@@ -1216,13 +1176,13 @@ async function submitAchievement() {
 async function deleteAchievement(id) {
   if (!confirm("Yutuqni o'chirishni tasdiqlaysizmi?")) return;
   try {
-    const { error } = await $supabase.from("badges").delete().eq("id", id);
-    if (error) {
-      console.error("Delete badge error", error);
+    const resp = await auth.api.delete(`/badges/${id}/`);
+    if (!(resp.status === 200 || resp.status === 204)) {
+      console.error("Delete badge error", resp);
       alert("O'chirishda xato");
       return;
     }
-    const uid = auth?.user?.value?.id;
+    const uid = auth.user?.value?.id;
     await loadBadges(uid);
     await updateProfileXp(uid);
     await recalcGlobalRanks();
@@ -1232,7 +1192,7 @@ async function deleteAchievement(id) {
   }
 }
 
-/* ---------- AUTH GUARD: redirect to /signin if not authenticated ---------- */
+/* ---------- AUTH GUARD ---------- */
 function ensureAuthOrRedirect() {
   const uid = auth?.user?.value?.id;
   const path = route.path || "";
@@ -1283,6 +1243,7 @@ onMounted(async () => {
   }
 });
 </script>
+
 
 <style scoped>
 .profile-page {

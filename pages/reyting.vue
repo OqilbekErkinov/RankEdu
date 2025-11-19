@@ -32,7 +32,7 @@
             <img
               src="/images/trophy.png"
               alt="trophy"
-              style="position: fixed; top: 7rem; right: 2rem;"
+              style="position: fixed; top: 7rem; right: 2rem"
             />
           </div>
         </div>
@@ -81,26 +81,15 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import { useNuxtApp, useRuntimeConfig } from "#app";
+import { useRuntimeConfig } from "#app";
+import useAuth from "@/composables/useAuth";
 
 /* CONFIG */
 const defaultAvatar = "/images/default-avatar.png";
 const XP_PER_LEVEL = 100;
 const RETRY_COUNT = 3;
 
-/* runtime config (nuxt public env) */
-const config = useRuntimeConfig();
-const publicConfig = config.public || {};
-const SUPABASE_URL =
-  publicConfig.supabaseUrl || publicConfig.SUPABASE_URL || "";
-const SUPABASE_ANON_KEY =
-  publicConfig.supabaseKey ||
-  publicConfig.SUPABASE_KEY ||
-  publicConfig.supabaseKey ||
-  "";
-
-/* supabase client from plugin (if available) */
-const { $supabase } = useNuxtApp();
+const auth = useAuth();
 
 /* UI state */
 const profiles = ref([]);
@@ -116,7 +105,7 @@ const periods = [
 ];
 const activePeriod = ref("weekly");
 
-/* helpers */
+// helpers
 function formatNumber(n) {
   if (n === null || n === undefined) return "0";
   return Number(n).toLocaleString();
@@ -126,17 +115,40 @@ function computeLevel(xp) {
   return Math.floor(v / XP_PER_LEVEL);
 }
 
-/* fallback low-level REST call (when $supabase fails due to network/CORS) */
+/* Primary loader using Django REST via auth.api (axios). Falls back to unauth REST if needed. */
+async function fetchProfilesViaApi() {
+  try {
+    const resp = await auth.api.get("/profiles/?ordering=-xp");
+    if (resp.status === 200) {
+      const data = Array.isArray(resp.data)
+        ? resp.data
+        : resp.data.results ?? [];
+      return data;
+    }
+    throw new Error("Unexpected response " + resp.status);
+  } catch (e) {
+    throw e;
+  }
+}
+
+/* Fallback: if auth.api not available or fails, try unauth fetch via runtime config (not ideal). */
+// import { useRuntimeConfig } from "#app";
+const config = useRuntimeConfig();
+const publicConfig = config.public || {};
+const SUPABASE_URL =
+  publicConfig.supabaseUrl || publicConfig.SUPABASE_URL || "";
+const SUPABASE_ANON_KEY =
+  publicConfig.supabaseKey ||
+  publicConfig.SUPABASE_KEY ||
+  publicConfig.supabaseKey ||
+  "";
+
 async function fetchProfilesViaRest(retries = RETRY_COUNT) {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    throw new Error("Supabase URL yoki anon key runtime config-da topilmadi.");
+    throw new Error("Public REST fallback disabled (no supabase config).");
   }
-
-  // build URL (no trailing slash)
   const base = SUPABASE_URL.replace(/\/+$/, "");
-  // select required fields; ensure to match your actual column names
   const url = `${base}/rest/v1/profiles?select=user_id,fullname,university_short,university_full,xp,avatar_url&order=xp.desc`;
-
   const headers = {
     apikey: SUPABASE_ANON_KEY,
     Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
@@ -151,89 +163,22 @@ async function fetchProfilesViaRest(retries = RETRY_COUNT) {
         mode: "cors",
         cache: "no-store",
       });
-
       if (!resp.ok) {
         const txt = await resp.text().catch(() => "");
-        throw new Error(
-          `REST fetch failed: ${resp.status} ${resp.statusText} ${txt}`
-        );
+        throw new Error(`REST fetch failed: ${resp.status} ${txt}`);
       }
-
       const data = await resp.json();
       if (!Array.isArray(data)) throw new Error("REST response not array");
       return data;
     } catch (e) {
-      // last iteration throws
       if (i === retries - 1) throw e;
-      // small backoff
-      await new Promise((r) => setTimeout(r, 300 * (i + 1)));
+      await new Promise((r) => setTimeout(r, 200 * (i + 1)));
     }
   }
 }
 
-/* Main loader: tries $supabase client first, if network/failed_to_fetch then fallback to REST */
-async function loadProfiles() {
-  loading.value = true;
-  error.value = null;
-  errorMsg.value = "";
-
-  try {
-    // first try: if $supabase available use it
-    if ($supabase && typeof $supabase.from === "function") {
-      try {
-        const { data, error: supErr } = await $supabase
-          .from("profiles")
-          .select(
-            "user_id,fullname,university_short,university_full,xp,avatar_url"
-          )
-          .order("xp", { ascending: false });
-
-        if (supErr) {
-          // If error appears like network failed, try fallback
-          console.warn("Supabase select returned error", supErr);
-          // if error is network-related (TypeError: Failed to fetch) try fallback
-          if (
-            supErr.message &&
-            supErr.message.toLowerCase().includes("failed to fetch")
-          ) {
-            throw supErr; // to go to REST fallback
-          } else {
-            // other supabase error — show to user
-            error.value = supErr;
-            errorMsg.value = supErr.message || String(supErr);
-            profiles.value = [];
-            return;
-          }
-        }
-
-        if (Array.isArray(data)) {
-          transformAndSetProfiles(data);
-          return;
-        }
-      } catch (e) {
-        // log and fallthrough to REST fallback
-        console.warn(
-          "Supabase client fetch failed, will try REST fallback:",
-          e
-        );
-      }
-    }
-
-    // fallback via direct REST fetch with anon key
-    const restData = await fetchProfilesViaRest(RETRY_COUNT);
-    transformAndSetProfiles(restData);
-  } catch (e) {
-    console.error("loadProfiles exception", e);
-    error.value = e;
-    errorMsg.value = e.message || String(e);
-    profiles.value = [];
-  } finally {
-    loading.value = false;
-  }
-}
-
+/* Transformer */
 function transformAndSetProfiles(dataArray) {
-  // map/normalize rows
   const mapped = dataArray.map((p) => {
     const fullname = p.fullname || p.full_name || "Foydalanuvchi";
     const uni = p.university_full || p.university_short || p.university || "";
@@ -247,7 +192,7 @@ function transformAndSetProfiles(dataArray) {
       .toUpperCase();
 
     return {
-      user_id: p.user_id,
+      user_id: p.user?.id ?? p.user_id,
       displayName: fullname,
       university: uni,
       xp,
@@ -257,14 +202,43 @@ function transformAndSetProfiles(dataArray) {
     };
   });
 
-  // ensure sort by xp descending
   mapped.sort((a, b) => b.xp - a.xp);
   profiles.value = mapped;
 }
 
-/* computed lists */
+/* main loader */
+async function loadProfiles() {
+  loading.value = true;
+  error.value = null;
+  errorMsg.value = "";
+  try {
+    // try auth API first
+    try {
+      const data = await fetchProfilesViaApi();
+      transformAndSetProfiles(data);
+      return;
+    } catch (e) {
+      console.warn(
+        "Auth API fetch failed; falling back to REST:",
+        e?.message || e
+      );
+    }
+    // fallback to REST
+    const restData = await fetchProfilesViaRest();
+    transformAndSetProfiles(restData);
+  } catch (e) {
+    console.error("loadProfiles exception", e);
+    error.value = e;
+    errorMsg.value = e.message || String(e);
+    profiles.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+/* computed */
 const top3 = computed(() => profiles.value.slice(0, 3));
-const rest = computed(() => profiles.value.slice(3));
+const restList = computed(() => profiles.value.slice(3));
 const visuallyTop3 = computed(() =>
   profiles.value.slice(0, 3).map((p, idx) => ({
     nameShort: p.displayName.split(" ").slice(0, 2).join(" "),
@@ -278,26 +252,7 @@ const visuallyTop3 = computed(() =>
   }))
 );
 
-/* interactions */
-function setPeriod(k) {
-  activePeriod.value = k;
-  // If you have server-side period filtering, pass period to loadProfiles
-}
-function scrollToList() {
-  const el = document.querySelector(".card");
-  if (el) {
-    window.scrollTo({ top: el.offsetTop - 10, behavior: "smooth" });
-  }
-}
-
-/* lifecycle */
 onMounted(async () => {
-  // quick config validation
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.warn(
-      "Supabase public env not found. Make sure runtime config public.supabaseUrl and public.supabaseKey are set."
-    );
-  }
   await loadProfiles();
 });
 </script>
@@ -375,9 +330,10 @@ onMounted(async () => {
 }
 .ava-img {
   width: 100%;
-  height: 100%;
+  height: 57%;
   object-fit: cover;
   border-radius: 50%;
+  transform: translateY(-31px);
 }
 .ava-badge {
   position: absolute;

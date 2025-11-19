@@ -49,23 +49,19 @@ async function onSubmit() {
   err.value = null;
   loading.value = true;
   try {
-    const res = await auth.login({
-      email: email.value,
-      password: password.value,
-    });
-    // res ga qarab email tasdiqlanganmi yoki boshqa xatolik borligini tekshirish mumkin
-    if (res.error) {
-      err.value = res.error.message || "Login xatosi";
-      return;
+    const { data } = await auth.login({ email: email.value, password: password.value });
+    // agar muvaffaqiyat bo'lsa
+    if (data) {
+      router.push("/profile");
     }
-    // muvaffaqiyatli bo'lsa
-    router.push("/profile");
   } catch (e: any) {
-    err.value = e?.message || String(e);
+    // e obyektini formatAxiosError qaytarganidek {status,data,message}
+    err.value = e?.message || JSON.stringify(e?.data || e);
   } finally {
     loading.value = false;
   }
 }
+
 
 function goToSignup() {
   router.push("/signup");
